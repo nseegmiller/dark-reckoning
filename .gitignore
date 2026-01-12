@@ -86,3 +86,8 @@ typings/
 
 # DynamoDB Local files
 .dynamodb/
+
+# Claude AI settings
+.claude/settings.local.json
+tmpclaude-*-cwd
+nul

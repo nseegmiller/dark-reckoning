@@ -1,0 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --pip-green: #14ff57;
+  --pip-green-dim: #0a8f2f;
+  --pip-green-glow: rgba(20, 255, 87, 0.4);
+  --pip-bg: #0a0f0a;
+  --pip-bg-light: #0f1a0f;
+  --pip-border: #1a3a1a;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  body {
+    background-color: var(--pip-bg);
+    color: var(--pip-green);
+    font-family: 'Share Tech Mono', monospace;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  /* Scanline effect */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.15) 0px,
+      rgba(0, 0, 0, 0.15) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* CRT flicker */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+    pointer-events: none;
+    z-index: 999;
+  }
+}
+
+@layer components {
+  .pip-text {
+    color: var(--pip-green);
+    text-shadow: 0 0 10px var(--pip-green-glow), 0 0 20px var(--pip-green-glow);
+  }
+
+  .pip-text-dim {
+    color: var(--pip-green-dim);
+  }
+
+  .pip-border {
+    border-color: var(--pip-green-dim);
+  }
+
+  .pip-btn {
+    @apply px-4 py-2 uppercase tracking-wider text-sm;
+    @apply transition-all duration-100 select-none;
+    @apply active:scale-95;
+    background: transparent;
+    border: 1px solid var(--pip-green-dim);
+    color: var(--pip-green);
+  }
+
+  .pip-btn:hover {
+    background: rgba(20, 255, 87, 0.1);
+    border-color: var(--pip-green);
+    box-shadow: 0 0 10px var(--pip-green-glow), inset 0 0 10px var(--pip-green-glow);
+  }
+
+  .pip-btn-active {
+    background: rgba(20, 255, 87, 0.2);
+    border-color: var(--pip-green);
+    box-shadow: 0 0 15px var(--pip-green-glow);
+  }
+
+  .pip-panel {
+    background: var(--pip-bg-light);
+    border: 1px solid var(--pip-green-dim);
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+  }
+
+  .score-text {
+    font-size: clamp(3rem, 15vw, 5rem);
+    font-weight: bold;
+    font-family: 'Share Tech Mono', monospace;
+    text-shadow: 0 0 20px var(--pip-green-glow), 0 0 40px var(--pip-green-glow);
+  }
+
+  .player-name {
+    @apply text-sm uppercase tracking-widest;
+    text-shadow: 0 0 10px var(--pip-green-glow);
+  }
+}
