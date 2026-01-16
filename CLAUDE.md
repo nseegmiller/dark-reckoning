@@ -1,0 +1,80 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+Dark Reckoning is a score tracking web application for the board game "Dark Reckoning". It's a React + Vite application with a Pip-Boy inspired terminal aesthetic, designed for mobile-first touch interactions with swipe gestures to adjust scores.
+
+## Development Commands
+
+```bash
+npm run dev      # Start development server (Vite)
+npm run build    # Build for production
+npm run preview  # Preview production build
+```
+
+## Development Guidelines
+
+**IMPORTANT: Do not create temporary files in the project directory.** All temporary files (such as tmpclaude-* or similar) should be created in the system temp directory, not in the project root or any subdirectories. Keep the project directory clean and only include files that are part of the application.
+
+## Architecture
+
+### State Management Pattern
+
+The app uses React Context + useReducer for global state management centered in `src/context/GameContext.jsx`. All game state (players, scores, history, theme, multiplier) flows through the `GameContext`.
+
+**Key state operations:**
+- State automatically persists to localStorage (key: `'darkReckoning'`)
+- All mutations go through reducer actions (LOAD_STATE, ADD_PLAYER, ADJUST_SCORE, UNDO, etc.)
+- History is maintained for undo functionality (last 100 entries)
+
+### Component Structure
+
+- **App.jsx**: Root component that wraps everything in GameProvider
+- **PlayerGrid.jsx**: Dynamic grid layout (1-8 players) that calculates grid-cols/rows based on player count
+- **PlayerCell.jsx**: Individual player display with swipe gesture handling
+- **SettingsMenu.jsx**: Full-screen overlay for managing players and game settings
+
+### Touch Interaction System
+
+The core interaction is swipe-to-score implemented in `src/hooks/useSwipe.js`:
+
+1. **Rotation-aware gestures**: Swipe direction transforms based on player.rotation (0°, 90°, 180°, 270°) so "up from player's perspective" always increases score
+2. **Delta calculation**: 30 pixels = 1 unit, scaled by global multiplier
+3. **Preview feedback**: Shows tentative score change during swipe
+4. **Dual input**: Supports both touch (mobile) and mouse (desktop)
+
+**Important:** The swipe hook handles rotation transformation via `transformDelta()` function that maps physical swipe direction to logical score change based on how the player card is rotated.
+
+### Styling System
+
+Uses Tailwind CSS with extensive custom properties:
+
+- **Pip-Boy theme**: Green terminal aesthetic with CSS variables in `src/index.css` (`--pip-green`, `--pip-bg`, etc.)
+- **CRT effects**: Scanline overlay and vignette applied via body pseudo-elements
+- **Custom colors**: 8 player colors defined in `tailwind.config.js` and `src/utils/colors.js`
+- **Responsive fonts**: `score-text` class uses clamp() for viewport-based sizing
+
+### Data Persistence
+
+localStorage is the single source of truth:
+- Saved on every state change (via useEffect in GameContext)
+- Loaded once on mount
+- Includes all players, scores, history, settings
+
+## Key Files
+
+- `src/context/GameContext.jsx` - State management reducer and localStorage sync
+- `src/hooks/useSwipe.js` - Touch/mouse gesture handling with rotation support
+- `src/components/PlayerCell.jsx` - Individual player rendering and interaction
+- `src/utils/colors.js` - Player color palette (8 colors)
+- `tailwind.config.js` - Custom theme colors and game styling
+
+## Important Constraints
+
+- **Max 8 players** (enforced in ADD_PLAYER action)
+- **Rotation states**: 0°, 90°, 180°, 270° only (increments of 90°)
+- **History limit**: 100 entries max
+- **No backend**: Everything is client-side with localStorage
+- **Mobile-first**: Primary interaction is touch swipe, mouse is secondary
