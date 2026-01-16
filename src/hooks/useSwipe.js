@@ -26,6 +26,7 @@ export function useSwipe({ onSwipe, onPreview, multiplier = 1, rotation = 0 }) {
   const currentDelta = useRef({ x: 0, y: 0 })
 
   const handleTouchStart = useCallback((e) => {
+    if (!e.touches || !e.touches[0]) return
     touchStart.current = {
       x: e.touches[0].clientX,
       y: e.touches[0].clientY,
@@ -35,7 +36,7 @@ export function useSwipe({ onSwipe, onPreview, multiplier = 1, rotation = 0 }) {
   }, [])
 
   const handleTouchMove = useCallback((e) => {
-    if (!touchStart.current) return
+    if (!touchStart.current || !e.touches || !e.touches[0]) return
 
     const deltaX = touchStart.current.x - e.touches[0].clientX
     const deltaY = touchStart.current.y - e.touches[0].clientY
@@ -78,6 +79,14 @@ export function useSwipe({ onSwipe, onPreview, multiplier = 1, rotation = 0 }) {
     touchStart.current = null
     currentDelta.current = { x: 0, y: 0 }
   }, [onSwipe, onPreview, multiplier, rotation])
+
+  const handleTouchCancel = useCallback(() => {
+    if (onPreview) {
+      onPreview(null)
+    }
+    touchStart.current = null
+    currentDelta.current = { x: 0, y: 0 }
+  }, [onPreview])
 
   // Mouse support for desktop
   const mouseStart = useRef(null)
@@ -133,6 +142,7 @@ export function useSwipe({ onSwipe, onPreview, multiplier = 1, rotation = 0 }) {
     onTouchStart: handleTouchStart,
     onTouchMove: handleTouchMove,
     onTouchEnd: handleTouchEnd,
+    onTouchCancel: handleTouchCancel,
     onMouseDown: handleMouseDown,
     onMouseMove: handleMouseMove,
     onMouseUp: handleMouseUp,

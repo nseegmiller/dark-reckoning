@@ -1,16 +1,20 @@
+import { useMemo } from 'react'
 import { useGame } from '../context/GameContext'
 
 export function History({ onClose }) {
   const { state } = useGame()
 
+  // Create a Map for O(1) player lookups instead of O(n) find() calls
+  const playerMap = useMemo(() => {
+    return new Map(state.players.map(p => [p.id, p]))
+  }, [state.players])
+
   const getPlayerName = (playerId) => {
-    const player = state.players.find(p => p.id === playerId)
-    return player?.name || 'Unknown'
+    return playerMap.get(playerId)?.name || 'Unknown'
   }
 
   const getPlayerColor = (playerId) => {
-    const player = state.players.find(p => p.id === playerId)
-    return player?.color || '#888'
+    return playerMap.get(playerId)?.color || '#888'
   }
 
   const formatTime = (timestamp) => {
@@ -19,7 +23,12 @@ export function History({ onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+    <div
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="history-dialog-title"
+    >
       <div
         className="bg-game-card border border-game-border w-full max-w-md max-h-[80vh] flex flex-col"
         style={{ clipPath: 'polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px)' }}
@@ -27,13 +36,14 @@ export function History({ onClose }) {
         {/* Header */}
         <div className="relative flex items-center justify-between p-4 border-b border-game-border">
           <div className="absolute top-0 left-4 right-4 h-0.5 bg-game-accent" style={{ boxShadow: '0 0 10px rgba(99, 102, 241, 0.5)' }} />
-          <h2 className="text-lg font-bold uppercase tracking-widest text-game-glow pt-2"
+          <h2 id="history-dialog-title" className="text-lg font-bold uppercase tracking-widest text-game-glow pt-2"
               style={{ fontFamily: 'Orbitron, monospace' }}>
             History
           </h2>
           <button
             onClick={onClose}
             className="p-1 text-gray-500 hover:text-white transition-colors"
+            aria-label="Close history"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

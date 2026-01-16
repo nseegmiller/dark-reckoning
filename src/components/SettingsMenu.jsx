@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useGame } from '../context/GameContext'
+import { useGame, ACTIONS } from '../context/GameContext'
 import { PLAYER_COLORS } from '../utils/colors'
 import { ConfirmDialog } from './ConfirmDialog'
 
@@ -11,16 +11,16 @@ export function SettingsMenu({ onClose }) {
 
   const handleAddPlayer = () => {
     if (state.players.length >= 8) return
-    dispatch({ type: 'ADD_PLAYER', payload: newPlayerName.trim() })
+    dispatch({ type: ACTIONS.ADD_PLAYER, payload: newPlayerName.trim() })
     setNewPlayerName('')
   }
 
   const handleRemovePlayer = (id) => {
-    dispatch({ type: 'REMOVE_PLAYER', payload: id })
+    dispatch({ type: ACTIONS.REMOVE_PLAYER, payload: id })
   }
 
   const handleUndo = () => {
-    dispatch({ type: 'UNDO' })
+    dispatch({ type: ACTIONS.UNDO })
   }
 
   const handleNewGame = () => {
@@ -29,7 +29,7 @@ export function SettingsMenu({ onClose }) {
       message: 'Reset all scores to 0? Players will be kept.',
       confirmText: 'Reset Scores',
       onConfirm: () => {
-        dispatch({ type: 'NEW_GAME' })
+        dispatch({ type: ACTIONS.NEW_GAME })
         setConfirmDialog(null)
       },
     })
@@ -42,7 +42,7 @@ export function SettingsMenu({ onClose }) {
       confirmText: 'Clear All',
       danger: true,
       onConfirm: () => {
-        dispatch({ type: 'CLEAR_ALL' })
+        dispatch({ type: ACTIONS.CLEAR_ALL })
         setConfirmDialog(null)
       },
     })
@@ -50,7 +50,7 @@ export function SettingsMenu({ onClose }) {
 
   const handleColorChange = (playerId, color) => {
     dispatch({
-      type: 'UPDATE_PLAYER',
+      type: ACTIONS.UPDATE_PLAYER,
       payload: { id: playerId, updates: { color } },
     })
   }
@@ -59,12 +59,18 @@ export function SettingsMenu({ onClose }) {
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.9)' }}>
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        style={{ backgroundColor: 'rgba(0,0,0,0.9)' }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="settings-title"
+      >
         <div className="pip-panel w-full max-w-md max-h-[90vh] overflow-y-auto">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b pip-border">
-            <h2 className="text-lg uppercase tracking-widest pip-text">Settings</h2>
-            <button onClick={onClose} className="pip-text-dim hover:pip-text text-2xl">&times;</button>
+            <h2 id="settings-title" className="text-lg uppercase tracking-widest pip-text">Settings</h2>
+            <button onClick={onClose} className="pip-text-dim hover:pip-text text-2xl" aria-label="Close settings">&times;</button>
           </div>
 
           <div className="p-4 space-y-6">
@@ -108,11 +114,12 @@ export function SettingsMenu({ onClose }) {
                       type="text"
                       value={player.name}
                       onChange={(e) => dispatch({
-                        type: 'UPDATE_PLAYER',
+                        type: ACTIONS.UPDATE_PLAYER,
                         payload: { id: player.id, updates: { name: e.target.value } }
                       })}
                       className="flex-1 bg-transparent border-none outline-none pip-text uppercase tracking-wide"
                       maxLength={12}
+                      aria-label={`Name for ${player.name}`}
                     />
 
                     {/* Score display */}

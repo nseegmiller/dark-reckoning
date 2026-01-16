@@ -8,18 +8,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        player: {
-          red: '#E53935',
-          blue: '#1E88E5',
-          green: '#43A047',
-          purple: '#8E24AA',
-          orange: '#FB8C00',
-          teal: '#00ACC1',
-          pink: '#D81B60',
-          amber: '#FFB300',
-        },
+        // Player colors are defined in src/utils/colors.js and used via inline styles
         game: {
-          bg: '#0a0a0f',
+          bg: '#0a0f0a',
           card: '#12121a',
           border: '#2a2a3a',
           accent: '#6366f1',

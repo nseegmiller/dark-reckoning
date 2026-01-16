@@ -2,13 +2,38 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#1f2937" />
-    <meta name="description" content="Dark Reckoning - Board game score tracker" />
+
+    <!-- Theme and colors -->
+    <meta name="theme-color" content="#0a0f0a" />
+    <meta name="color-scheme" content="dark" />
+
+    <!-- App info -->
+    <meta name="description" content="Dark Reckoning - Board game score tracker with Pip-Boy terminal aesthetic" />
     <title>Dark Reckoning</title>
+
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Dark Reckoning" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Dark Reckoning" />
+    <meta property="og:description" content="Board game score tracker with Pip-Boy terminal aesthetic" />
+    <meta property="og:type" content="website" />
   </head>
   <body>
+    <noscript>
+      <p style="color: #14ff57; background: #0a0f0a; padding: 2rem; text-align: center;">
+        This app requires JavaScript to run. Please enable JavaScript in your browser.
+      </p>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

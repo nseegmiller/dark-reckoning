@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { useGame } from '../context/GameContext'
+import { useGame, ACTIONS } from '../context/GameContext'
 
 export function Header({ onSettingsClick }) {
   const { state, dispatch } = useGame()
   const [showMultiplier, setShowMultiplier] = useState(false)
 
   const handleMultiplierSelect = (mult) => {
-    dispatch({ type: 'SET_MULTIPLIER', payload: mult })
+    dispatch({ type: ACTIONS.SET_MULTIPLIER, payload: mult })
     setShowMultiplier(false)
   }
 
@@ -22,6 +22,9 @@ export function Header({ onSettingsClick }) {
           <button
             onClick={() => setShowMultiplier(!showMultiplier)}
             className="pip-btn py-1 px-3"
+            aria-haspopup="menu"
+            aria-expanded={showMultiplier}
+            aria-label={`Score multiplier: ${state.multiplier}x`}
           >
             x{state.multiplier}
           </button>
@@ -35,12 +38,14 @@ export function Header({ onSettingsClick }) {
               />
 
               {/* Popup */}
-              <div className="absolute top-full right-0 mt-2 pip-panel z-50 p-2 flex flex-col gap-1 min-w-[80px]">
-                {[1, 5, 10, 25, 50, 100].map((mult) => (
+              <div className="absolute top-full right-0 mt-2 pip-panel z-50 p-2 flex flex-col gap-1 min-w-[80px]" role="menu">
+                {[1, 5, 10].map((mult) => (
                   <button
                     key={mult}
                     onClick={() => handleMultiplierSelect(mult)}
                     className={`pip-btn py-1 text-center ${state.multiplier === mult ? 'pip-btn-active' : ''}`}
+                    role="menuitem"
+                    aria-current={state.multiplier === mult ? 'true' : undefined}
                   >
                     x{mult}
                   </button>

@@ -1,14 +1,14 @@
-import { useState, useCallback, useRef } from 'react'
-import { useGame } from '../context/GameContext'
+import { useState, useCallback, useRef, memo } from 'react'
+import { useGame, ACTIONS } from '../context/GameContext'
 import { useSwipe } from '../hooks/useSwipe'
 
-export function PlayerCell({ player }) {
+export const PlayerCell = memo(function PlayerCell({ player }) {
   const { state, dispatch } = useGame()
   const [previewChange, setPreviewChange] = useState(null)
   const lastTapRef = useRef(0)
 
   const handleSwipe = useCallback((change) => {
-    dispatch({ type: 'ADJUST_SCORE', payload: { playerId: player.id, change } })
+    dispatch({ type: ACTIONS.ADJUST_SCORE, payload: { playerId: player.id, change } })
   }, [dispatch, player.id])
 
   const handlePreview = useCallback((change) => {
@@ -16,7 +16,7 @@ export function PlayerCell({ player }) {
   }, [])
 
   const handleRotate = useCallback(() => {
-    dispatch({ type: 'ROTATE_PLAYER', payload: player.id })
+    dispatch({ type: ACTIONS.ROTATE_PLAYER, payload: player.id })
   }, [dispatch, player.id])
 
   // Double-tap detection
@@ -108,4 +108,4 @@ export function PlayerCell({ player }) {
       </div>
     </div>
   )
-}
+})

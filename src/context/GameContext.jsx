@@ -1,7 +1,23 @@
-import { createContext, useContext, useReducer, useEffect, useState } from 'react'
+import { createContext, useContext, useReducer, useEffect, useState, useRef } from 'react'
 import { getNextAvailableColor } from '../utils/colors'
 
 const STORAGE_KEY = 'darkReckoning'
+const SAVE_DEBOUNCE_MS = 500
+
+// Action type constants
+export const ACTIONS = {
+  LOAD_STATE: 'LOAD_STATE',
+  SET_THEME: 'SET_THEME',
+  SET_MULTIPLIER: 'SET_MULTIPLIER',
+  ADD_PLAYER: 'ADD_PLAYER',
+  REMOVE_PLAYER: 'REMOVE_PLAYER',
+  UPDATE_PLAYER: 'UPDATE_PLAYER',
+  ROTATE_PLAYER: 'ROTATE_PLAYER',
+  ADJUST_SCORE: 'ADJUST_SCORE',
+  UNDO: 'UNDO',
+  NEW_GAME: 'NEW_GAME',
+  CLEAR_ALL: 'CLEAR_ALL',
+}
 
 const initialState = {
   theme: 'dark',
@@ -14,18 +30,79 @@ function generateId() {
   return crypto.randomUUID()
 }
 
+function validatePlayer(player) {
+  return (
+    player &&
+    typeof player === 'object' &&
+    typeof player.id === 'string' &&
+    typeof player.name === 'string' &&
+    typeof player.color === 'string' &&
+    typeof player.score === 'number'
+  )
+}
+
+function validateHistoryEntry(entry) {
+  return (
+    entry &&
+    typeof entry === 'object' &&
+    typeof entry.id === 'string' &&
+    typeof entry.playerId === 'string' &&
+    typeof entry.change === 'number' &&
+    typeof entry.timestamp === 'number'
+  )
+}
+
+function validateLoadedState(payload) {
+  if (!payload || typeof payload !== 'object') {
+    return null
+  }
+
+  const validatedState = {
+    theme: payload.theme === 'light' ? 'light' : 'dark',
+    multiplier: [1, 5, 10].includes(payload.multiplier) ? payload.multiplier : 1,
+    players: [],
+    history: [],
+  }
+
+  if (Array.isArray(payload.players)) {
+    validatedState.players = payload.players
+      .filter(validatePlayer)
+      .map(p => ({
+        id: p.id,
+        name: p.name,
+        color: p.color,
+        score: p.score,
+        rotation: typeof p.rotation === 'number' ? p.rotation : 0,
+      }))
+  }
+
+  if (Array.isArray(payload.history)) {
+    validatedState.history = payload.history
+      .filter(validateHistoryEntry)
+      .slice(0, 100)
+  }
+
+  return validatedState
+}
+
 function gameReducer(state, action) {
   switch (action.type) {
-    case 'LOAD_STATE':
-      return { ...initialState, ...action.payload }
+    case ACTIONS.LOAD_STATE: {
+      const validated = validateLoadedState(action.payload)
+      if (!validated) {
+        console.warn('Invalid state in localStorage, using defaults')
+        return initialState
+      }
+      return validated
+    }
 
-    case 'SET_THEME':
+    case ACTIONS.SET_THEME:
       return { ...state, theme: action.payload }
 
-    case 'SET_MULTIPLIER':
+    case ACTIONS.SET_MULTIPLIER:
       return { ...state, multiplier: action.payload }
 
-    case 'ADD_PLAYER': {
+    case ACTIONS.ADD_PLAYER: {
       if (state.players.length >= 8) return state
       const usedColors = state.players.map(p => p.color)
       const color = getNextAvailableColor(usedColors)
@@ -39,14 +116,14 @@ function gameReducer(state, action) {
       return { ...state, players: [...state.players, newPlayer] }
     }
 
-    case 'REMOVE_PLAYER':
+    case ACTIONS.REMOVE_PLAYER:
       return {
         ...state,
         players: state.players.filter(p => p.id !== action.payload),
         history: state.history.filter(h => h.playerId !== action.payload),
       }
 
-    case 'UPDATE_PLAYER':
+    case ACTIONS.UPDATE_PLAYER:
       return {
         ...state,
         players: state.players.map(p =>
@@ -54,7 +131,7 @@ function gameReducer(state, action) {
         ),
       }
 
-    case 'ROTATE_PLAYER':
+    case ACTIONS.ROTATE_PLAYER:
       return {
         ...state,
         players: state.players.map(p =>
@@ -64,7 +141,7 @@ function gameReducer(state, action) {
         ),
       }
 
-    case 'ADJUST_SCORE': {
+    case ACTIONS.ADJUST_SCORE: {
       const { playerId, change } = action.payload
       const historyEntry = {
         id: generateId(),
@@ -77,11 +154,11 @@ function gameReducer(state, action) {
         players: state.players.map(p =>
           p.id === playerId ? { ...p, score: p.score + change } : p
         ),
-        history: [historyEntry, ...state.history].slice(0, 100), // Keep last 100 entries
+        history: [historyEntry, ...state.history].slice(0, 100),
       }
     }
 
-    case 'UNDO': {
+    case ACTIONS.UNDO: {
       if (state.history.length === 0) return state
       const [lastEntry, ...remainingHistory] = state.history
       return {
@@ -95,14 +172,14 @@ function gameReducer(state, action) {
       }
     }
 
-    case 'NEW_GAME':
+    case ACTIONS.NEW_GAME:
       return {
         ...state,
         players: state.players.map(p => ({ ...p, score: 0 })),
         history: [],
       }
 
-    case 'CLEAR_ALL':
+    case ACTIONS.CLEAR_ALL:
       return { ...initialState, theme: state.theme }
 
     default:
@@ -112,9 +189,35 @@ function gameReducer(state, action) {
 
 const GameContext = createContext(null)
 
+function saveToLocalStorage(state) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+    return true
+  } catch (e) {
+    if (e.name === 'QuotaExceededError') {
+      // Try saving with truncated history
+      const truncatedState = {
+        ...state,
+        history: state.history.slice(0, 20),
+      }
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(truncatedState))
+        console.warn('localStorage quota exceeded, saved with truncated history')
+        return true
+      } catch (e2) {
+        console.error('Failed to save state even with truncation:', e2)
+      }
+    } else {
+      console.error('Failed to save state:', e)
+    }
+    return false
+  }
+}
+
 export function GameProvider({ children }) {
   const [state, dispatch] = useReducer(gameReducer, initialState)
   const [isLoaded, setIsLoaded] = useState(false)
+  const saveTimerRef = useRef(null)
 
   // Load state from localStorage on mount
   useEffect(() => {
@@ -122,7 +225,7 @@ export function GameProvider({ children }) {
       const saved = localStorage.getItem(STORAGE_KEY)
       if (saved) {
         const parsed = JSON.parse(saved)
-        dispatch({ type: 'LOAD_STATE', payload: parsed })
+        dispatch({ type: ACTIONS.LOAD_STATE, payload: parsed })
       }
     } catch (e) {
       console.error('Failed to load state:', e)
@@ -130,13 +233,24 @@ export function GameProvider({ children }) {
     setIsLoaded(true)
   }, [])
 
-  // Save state to localStorage on change (only after initial load)
+  // Debounced save to localStorage on change (only after initial load)
   useEffect(() => {
     if (!isLoaded) return
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-    } catch (e) {
-      console.error('Failed to save state:', e)
+
+    // Clear any pending save
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current)
+    }
+
+    // Debounce the save
+    saveTimerRef.current = setTimeout(() => {
+      saveToLocalStorage(state)
+    }, SAVE_DEBOUNCE_MS)
+
+    return () => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current)
+      }
     }
   }, [state, isLoaded])
 

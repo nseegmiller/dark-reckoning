@@ -27,28 +27,29 @@
     position: relative;
   }
 
-  /* Scanline effect */
+  /* Scanline effect - optimized with reduced opacity and larger line spacing */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
     background: repeating-linear-gradient(
       0deg,
-      rgba(0, 0, 0, 0.15) 0px,
-      rgba(0, 0, 0, 0.15) 1px,
+      rgba(0, 0, 0, 0.08) 0px,
+      rgba(0, 0, 0, 0.08) 1px,
       transparent 1px,
-      transparent 2px
+      transparent 3px
     );
     pointer-events: none;
     z-index: 1000;
+    will-change: transform;
   }
 
-  /* CRT flicker */
+  /* CRT vignette - simplified gradient */
   body::after {
     content: '';
     position: fixed;
     inset: 0;
-    background: radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+    background: radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.25) 100%);
     pointer-events: none;
     z-index: 999;
   }
@@ -57,7 +58,7 @@
 @layer components {
   .pip-text {
     color: var(--pip-green);
-    text-shadow: 0 0 10px var(--pip-green-glow), 0 0 20px var(--pip-green-glow);
+    text-shadow: 0 0 12px var(--pip-green-glow);
   }
 
   .pip-text-dim {
@@ -99,7 +100,7 @@
     font-size: clamp(3rem, 15vw, 5rem);
     font-weight: bold;
     font-family: 'Share Tech Mono', monospace;
-    text-shadow: 0 0 20px var(--pip-green-glow), 0 0 40px var(--pip-green-glow);
+    text-shadow: 0 0 20px var(--pip-green-glow);
   }
 
   .player-name {
