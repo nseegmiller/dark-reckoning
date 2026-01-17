@@ -20,7 +20,7 @@ export const ACTIONS = {
 }
 
 const initialState = {
-  theme: 'dark',
+  theme: 'atompunk',
   multiplier: 1,
   players: [],
   history: [],
@@ -57,8 +57,11 @@ function validateLoadedState(payload) {
     return null
   }
 
+  // Migrate old theme values to new ones
+  const theme = payload.theme === 'nebula' ? 'nebula' : 'atompunk'
+
   const validatedState = {
-    theme: payload.theme === 'light' ? 'light' : 'dark',
+    theme,
     multiplier: [1, 5, 10].includes(payload.multiplier) ? payload.multiplier : 1,
     players: [],
     history: [],
@@ -96,8 +99,11 @@ function gameReducer(state, action) {
       return validated
     }
 
-    case ACTIONS.SET_THEME:
-      return { ...state, theme: action.payload }
+    case ACTIONS.SET_THEME: {
+      const validThemes = ['atompunk', 'nebula']
+      const newTheme = validThemes.includes(action.payload) ? action.payload : state.theme
+      return { ...state, theme: newTheme }
+    }
 
     case ACTIONS.SET_MULTIPLIER:
       return { ...state, multiplier: action.payload }
@@ -256,11 +262,10 @@ export function GameProvider({ children }) {
 
   // Apply theme class to document
   useEffect(() => {
-    if (state.theme === 'dark') {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
+    // Remove all theme classes
+    document.documentElement.classList.remove('theme-atompunk', 'theme-nebula')
+    // Add current theme class
+    document.documentElement.classList.add(`theme-${state.theme}`)
   }, [state.theme])
 
   return (

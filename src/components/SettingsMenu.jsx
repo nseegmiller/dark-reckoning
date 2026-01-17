@@ -155,6 +155,33 @@ export function SettingsMenu({ onClose }) {
               )}
             </div>
 
+            {/* Theme Selection */}
+            <div>
+              <label className="block text-sm uppercase tracking-wider pip-text-dim mb-2">
+                Theme
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => dispatch({ type: ACTIONS.SET_THEME, payload: 'atompunk' })}
+                  className={`pip-btn py-3 ${state.theme === 'atompunk' ? 'pip-btn-active' : ''}`}
+                >
+                  <div className="text-center">
+                    <div className="text-sm mb-1">Atom Punk</div>
+                    <div className="text-xs pip-text-dim">Terminal</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => dispatch({ type: ACTIONS.SET_THEME, payload: 'nebula' })}
+                  className={`pip-btn py-3 ${state.theme === 'nebula' ? 'pip-btn-active' : ''}`}
+                >
+                  <div className="text-center">
+                    <div className="text-sm mb-1">Nebula</div>
+                    <div className="text-xs pip-text-dim">Space</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
             {/* Actions */}
             <div className="space-y-2">
               <button

@@ -1,16 +1,77 @@
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --pip-green: #14ff57;
-  --pip-green-dim: #0a8f2f;
-  --pip-green-glow: rgba(20, 255, 87, 0.4);
-  --pip-bg: #0a0f0a;
-  --pip-bg-light: #0f1a0f;
-  --pip-border: #1a3a1a;
+  /* Theme-agnostic variables (set by theme classes) */
+  --theme-primary: #14ff57;
+  --theme-primary-dim: #0a8f2f;
+  --theme-glow: rgba(20, 255, 87, 0.4);
+  --theme-bg: #0a0f0a;
+  --theme-bg-light: #0f1a0f;
+  --theme-border: #1a3a1a;
+  --theme-font: 'Share Tech Mono', monospace;
+  --theme-border-radius: 0px;
+  --theme-transition: 100ms;
+  --theme-animation-duration: 8s;
+
+  /* Legacy variable names for backward compatibility */
+  --pip-green: var(--theme-primary);
+  --pip-green-dim: var(--theme-primary-dim);
+  --pip-green-glow: var(--theme-glow);
+  --pip-bg: var(--theme-bg);
+  --pip-bg-light: var(--theme-bg-light);
+  --pip-border: var(--theme-border);
+}
+
+/* Atom Punk Theme (Fallout-style terminal) */
+.theme-atompunk {
+  --theme-primary: #14ff57;
+  --theme-primary-dim: #0a8f2f;
+  --theme-glow: rgba(20, 255, 87, 0.4);
+  --theme-bg: #0a0f0a;
+  --theme-bg-light: #0f1a0f;
+  --theme-border: #1a3a1a;
+  --theme-font: 'Share Tech Mono', monospace;
+  --theme-border-radius: 0px;
+  --theme-transition: 100ms;
+  --theme-animation-duration: 8s;
+}
+
+/* Nebula Theme (Space sci-fi) */
+.theme-nebula {
+  --theme-primary: #60a5fa;
+  --theme-primary-dim: #3b82f6;
+  --theme-glow: rgba(96, 165, 250, 0.4);
+  --theme-bg: #0a0e1a;
+  --theme-bg-light: #111827;
+  --theme-border: #1e3a8a;
+  --theme-accent: #a78bfa;
+  --theme-accent-glow: rgba(167, 139, 250, 0.4);
+  --theme-font: 'Orbitron', sans-serif;
+  --theme-border-radius: 12px;
+  --theme-transition: 300ms;
+  --theme-animation-duration: 8s;
+}
+
+/* Animations */
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  41%, 43% { opacity: 0.95; }
+  45%, 47% { opacity: 0.97; }
+  93%, 95% { opacity: 0.96; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    filter: brightness(1) drop-shadow(0 0 8px var(--theme-glow));
+  }
+  50% {
+    filter: brightness(1.1) drop-shadow(0 0 16px var(--theme-glow));
+  }
 }
 
 @layer base {
@@ -20,15 +81,21 @@
   }
 
   body {
-    background-color: var(--pip-bg);
-    color: var(--pip-green);
-    font-family: 'Share Tech Mono', monospace;
+    background-color: var(--theme-bg);
+    color: var(--theme-primary);
+    font-family: var(--theme-font);
     min-height: 100vh;
     position: relative;
+    transition: background-color var(--theme-transition) ease;
   }
 
-  /* Scanline effect - optimized with reduced opacity and larger line spacing */
-  body::before {
+  /* Atom Punk text flicker effect */
+  .theme-atompunk body {
+    animation: flicker var(--theme-animation-duration) infinite;
+  }
+
+  /* Scanline effect - Atom Punk theme only */
+  .theme-atompunk body::before {
     content: '';
     position: fixed;
     inset: 0;
@@ -44,8 +111,8 @@
     will-change: transform;
   }
 
-  /* CRT vignette - simplified gradient */
-  body::after {
+  /* CRT vignette - Atom Punk theme only */
+  .theme-atompunk body::after {
     content: '';
     position: fixed;
     inset: 0;
@@ -53,58 +120,175 @@
     pointer-events: none;
     z-index: 999;
   }
+
+  /* Nebula animated background */
+  .theme-nebula body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 30%, rgba(167, 139, 250, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(96, 165, 250, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+    animation: pulse-glow var(--theme-animation-duration) ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Subtle vignette for Nebula theme */
+  .theme-nebula body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
 }
 
 @layer components {
   .pip-text {
-    color: var(--pip-green);
-    text-shadow: 0 0 12px var(--pip-green-glow);
+    color: var(--theme-primary);
+    text-shadow: 0 0 12px var(--theme-glow);
   }
 
   .pip-text-dim {
-    color: var(--pip-green-dim);
+    color: var(--theme-primary-dim);
   }
 
   .pip-border {
-    border-color: var(--pip-green-dim);
+    border-color: var(--theme-primary-dim);
   }
 
   .pip-btn {
-    @apply px-4 py-2 uppercase tracking-wider text-sm;
-    @apply transition-all duration-100 select-none;
-    @apply active:scale-95;
+    @apply px-4 py-2 uppercase tracking-wider text-sm select-none;
     background: transparent;
-    border: 1px solid var(--pip-green-dim);
-    color: var(--pip-green);
+    border: 1px solid var(--theme-primary-dim);
+    color: var(--theme-primary);
+    border-radius: var(--theme-border-radius);
+    transition: all var(--theme-transition) ease;
+    position: relative;
+    overflow: hidden;
   }
 
-  .pip-btn:hover {
-    background: rgba(20, 255, 87, 0.1);
-    border-color: var(--pip-green);
-    box-shadow: 0 0 10px var(--pip-green-glow), inset 0 0 10px var(--pip-green-glow);
+  .pip-btn:active {
+    transform: scale(0.95);
   }
 
-  .pip-btn-active {
-    background: rgba(20, 255, 87, 0.2);
-    border-color: var(--pip-green);
-    box-shadow: 0 0 15px var(--pip-green-glow);
+  /* Atom Punk button style */
+  .theme-atompunk .pip-btn:hover {
+    background-color: var(--theme-glow);
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 10px var(--theme-glow), inset 0 0 10px var(--theme-glow);
+  }
+
+  .theme-atompunk .pip-btn-active {
+    background: var(--theme-glow);
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 15px var(--theme-glow);
+  }
+
+  /* Nebula button style - gradient shimmer effect */
+  .theme-nebula .pip-btn {
+    border-width: 2px;
+    font-weight: 500;
+  }
+
+  .theme-nebula .pip-btn:hover {
+    background: linear-gradient(135deg, var(--theme-glow) 0%, var(--theme-accent-glow) 100%);
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 20px var(--theme-glow), 0 4px 15px var(--theme-glow);
+    transform: translateY(-2px);
+  }
+
+  .theme-nebula .pip-btn-active {
+    background: linear-gradient(135deg, var(--theme-glow) 0%, var(--theme-accent-glow) 100%);
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 25px var(--theme-glow), 0 0 40px var(--theme-accent-glow);
   }
 
   .pip-panel {
-    background: var(--pip-bg-light);
-    border: 1px solid var(--pip-green-dim);
+    background: var(--theme-bg-light);
+    border: 1px solid var(--theme-primary-dim);
     box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+    border-radius: var(--theme-border-radius);
+    position: relative;
+    z-index: 10;
+  }
+
+  /* Atom Punk panel - sharp, terminal style */
+  .theme-atompunk .pip-panel {
+    border-width: 1px;
+  }
+
+  /* Nebula panel - sleek with extra glow */
+  .theme-nebula .pip-panel {
+    border-width: 2px;
+    box-shadow:
+      inset 0 0 30px rgba(0, 0, 0, 0.5),
+      0 0 30px var(--theme-glow),
+      0 8px 32px rgba(0, 0, 0, 0.4);
   }
 
   .score-text {
     font-size: clamp(3rem, 15vw, 5rem);
     font-weight: bold;
-    font-family: 'Share Tech Mono', monospace;
-    text-shadow: 0 0 20px var(--pip-green-glow);
+    font-family: var(--theme-font);
+    text-shadow: 0 0 20px var(--theme-glow);
+  }
+
+  /* Nebula score text - extra glow */
+  .theme-nebula .score-text {
+    font-weight: 900;
+    text-shadow:
+      0 0 30px var(--theme-glow),
+      0 0 60px var(--theme-glow),
+      0 0 90px var(--theme-accent-glow);
   }
 
   .player-name {
     @apply text-sm uppercase tracking-widest;
-    text-shadow: 0 0 10px var(--pip-green-glow);
+    text-shadow: 0 0 10px var(--theme-glow);
+  }
+
+  /* Nebula player name - wider tracking, more weight */
+  .theme-nebula .player-name {
+    font-weight: 700;
+    letter-spacing: 0.2em;
+  }
+
+  /* Grid spacing - Nebula has more breathing room */
+  .theme-nebula .grid {
+    gap: 2px;
+  }
+
+  /* Input styling */
+  input {
+    border-radius: var(--theme-border-radius);
+    transition: all var(--theme-transition) ease;
+  }
+
+  .theme-nebula input:focus {
+    box-shadow: 0 0 20px var(--theme-glow);
+  }
+
+  /* Header enhancements */
+  .theme-nebula h1 {
+    font-weight: 700;
+    letter-spacing: 0.25em;
+  }
+
+  /* Settings icon glow on hover */
+  .theme-nebula header button svg {
+    transition: filter var(--theme-transition) ease;
+  }
+
+  .theme-nebula header button:hover svg {
+    filter: drop-shadow(0 0 8px var(--theme-glow));
+  }
+
+  /* Atom Punk settings icon - sharper */
+  .theme-atompunk header button:hover svg {
+    filter: drop-shadow(0 0 6px var(--theme-glow));
   }
 }

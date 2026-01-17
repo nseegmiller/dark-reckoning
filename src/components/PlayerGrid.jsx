@@ -26,7 +26,7 @@ export function PlayerGrid() {
   }
 
   return (
-    <div className={`flex-1 grid ${getGridClass()} gap-px bg-[var(--pip-green-dim)]`}>
+    <div className={`flex-1 grid ${getGridClass()} gap-px bg-[var(--theme-primary-dim)]`}>
       {state.players.map((player) => (
         <PlayerCell key={player.id} player={player} />
       ))}
