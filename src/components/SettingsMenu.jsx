@@ -3,6 +3,8 @@ import { useGame, ACTIONS } from '../context/GameContext'
 import { PLAYER_COLORS } from '../utils/colors'
 import { ConfirmDialog } from './ConfirmDialog'
 
+const FLUSH_DELAY_MS = 50
+
 export function SettingsMenu({ onClose }) {
   const { state, dispatch } = useGame()
   const [newPlayerName, setNewPlayerName] = useState('')
@@ -20,32 +22,45 @@ export function SettingsMenu({ onClose }) {
   }
 
   const handleUndo = () => {
-    dispatch({ type: ACTIONS.UNDO })
+    // Flush any pending score changes before undo
+    window.dispatchEvent(new CustomEvent('flushPendingScores'))
+    // Small delay to ensure flush completes
+    setTimeout(() => {
+      dispatch({ type: ACTIONS.UNDO })
+    }, FLUSH_DELAY_MS)
   }
 
   const handleNewGame = () => {
-    setConfirmDialog({
-      title: 'New Game',
-      message: 'Reset all scores to 0? Players will be kept.',
-      confirmText: 'Reset Scores',
-      onConfirm: () => {
-        dispatch({ type: ACTIONS.NEW_GAME })
-        setConfirmDialog(null)
-      },
-    })
+    // Flush any pending score changes before new game
+    window.dispatchEvent(new CustomEvent('flushPendingScores'))
+    setTimeout(() => {
+      setConfirmDialog({
+        title: 'New Game',
+        message: 'Reset all scores to 0? Players will be kept.',
+        confirmText: 'Reset Scores',
+        onConfirm: () => {
+          dispatch({ type: ACTIONS.NEW_GAME })
+          setConfirmDialog(null)
+        },
+      })
+    }, FLUSH_DELAY_MS)
   }
 
   const handleClearAll = () => {
-    setConfirmDialog({
-      title: 'Clear All',
-      message: 'Remove all players and start fresh?',
-      confirmText: 'Clear All',
-      danger: true,
-      onConfirm: () => {
-        dispatch({ type: ACTIONS.CLEAR_ALL })
-        setConfirmDialog(null)
-      },
-    })
+    // Flush any pending score changes before clearing all
+    window.dispatchEvent(new CustomEvent('flushPendingScores'))
+    setTimeout(() => {
+      setConfirmDialog({
+        title: 'Clear All',
+        message: 'Remove all players and start fresh?',
+        confirmText: 'Clear All',
+        danger: true,
+        onConfirm: () => {
+          dispatch({ type: ACTIONS.CLEAR_ALL })
+          setConfirmDialog(null)
+        },
+      })
+    }, FLUSH_DELAY_MS)
   }
 
   const handleColorChange = (playerId, color) => {

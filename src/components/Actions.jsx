@@ -3,41 +3,64 @@ import { useGame, ACTIONS } from '../context/GameContext'
 import { History } from './History'
 import { ConfirmDialog } from './ConfirmDialog'
 
+const FLUSH_DELAY_MS = 50
+
 export function Actions() {
   const { state, dispatch } = useGame()
   const [showHistory, setShowHistory] = useState(false)
   const [confirmDialog, setConfirmDialog] = useState(null)
 
   const handleUndo = () => {
-    dispatch({ type: ACTIONS.UNDO })
+    // Flush any pending score changes before undo
+    window.dispatchEvent(new CustomEvent('flushPendingScores'))
+    // Small delay to ensure flush completes
+    setTimeout(() => {
+      dispatch({ type: ACTIONS.UNDO })
+    }, FLUSH_DELAY_MS)
+  }
+
+  const handleShowHistory = () => {
+    // Flush any pending score changes before opening history
+    window.dispatchEvent(new CustomEvent('flushPendingScores'))
+    setTimeout(() => {
+      setShowHistory(true)
+    }, FLUSH_DELAY_MS)
   }
 
   const handleNewGame = () => {
     if (state.players.length === 0) return
-    setConfirmDialog({
-      title: 'New Game',
-      message: 'Reset all scores to 0?',
-      onConfirm: () => {
-        dispatch({ type: ACTIONS.NEW_GAME })
-        setConfirmDialog(null)
-      },
-      onCancel: () => setConfirmDialog(null),
-      confirmText: 'Reset',
-    })
+    // Flush any pending score changes before new game
+    window.dispatchEvent(new CustomEvent('flushPendingScores'))
+    setTimeout(() => {
+      setConfirmDialog({
+        title: 'New Game',
+        message: 'Reset all scores to 0?',
+        onConfirm: () => {
+          dispatch({ type: ACTIONS.NEW_GAME })
+          setConfirmDialog(null)
+        },
+        onCancel: () => setConfirmDialog(null),
+        confirmText: 'Reset',
+      })
+    }, FLUSH_DELAY_MS)
   }
 
   const handleClearAll = () => {
-    setConfirmDialog({
-      title: 'Clear All',
-      message: 'Remove all players and start fresh?',
-      onConfirm: () => {
-        dispatch({ type: ACTIONS.CLEAR_ALL })
-        setConfirmDialog(null)
-      },
-      onCancel: () => setConfirmDialog(null),
-      confirmText: 'Clear',
-      danger: true,
-    })
+    // Flush any pending score changes before clearing all
+    window.dispatchEvent(new CustomEvent('flushPendingScores'))
+    setTimeout(() => {
+      setConfirmDialog({
+        title: 'Clear All',
+        message: 'Remove all players and start fresh?',
+        onConfirm: () => {
+          dispatch({ type: ACTIONS.CLEAR_ALL })
+          setConfirmDialog(null)
+        },
+        onCancel: () => setConfirmDialog(null),
+        confirmText: 'Clear',
+        danger: true,
+      })
+    }, FLUSH_DELAY_MS)
   }
 
   return (
@@ -55,7 +78,7 @@ export function Actions() {
           Undo
         </button>
         <button
-          onClick={() => setShowHistory(true)}
+          onClick={handleShowHistory}
           className="btn-game"
           aria-label="View score history"
         >
