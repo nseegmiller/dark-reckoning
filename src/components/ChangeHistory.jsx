@@ -61,7 +61,6 @@ export function ChangeHistory({ onClose }) {
                 {/* Sections */}
                 <ChangelogSection title="Features" items={version.features} />
                 <ChangelogSection title="Bug Fixes" items={version.bugFixes} />
-                <ChangelogSection title="Code Quality" items={version.codeQuality} />
               </div>
             ))
           )}

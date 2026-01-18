@@ -33,15 +33,23 @@ The app version is managed in `src/version.js` with separate `VERSION_MAJOR` and
 2. Update version in `src/version.js` (increment MINOR by 1)
 3. Generate commit message and add it to `CHANGELOG.md`:
    - Add new version section at the top (e.g., `## v0.8`)
-   - Include sections: **Features:**, **Bug Fixes:**, **Code Quality:**
+   - ONLY include sections: **Features:** and/or **Bug Fixes:**
+   - NEVER include **Code Quality:** in CHANGELOG.md (that's only for commit messages)
+   - Only include a section if it has content (skip empty sections)
    - List changes as bullet points (`- Change description`)
 4. Create the git commit with updated version and changelog included
-   - Commit message should match CHANGELOG.md content exactly
+   - Commit message can include all three sections: Features, Bug Fixes, Code Quality
    - Use the version number as the first line (e.g., "v0.8: Brief summary")
+   - Only include sections that have content
+
+**Section Rules:**
+- **Features** and **Bug Fixes**: Go in CHANGELOG.md (shown to users) and commit messages
+- **Code Quality**: Only in commit messages, NEVER in CHANGELOG.md (internal development only)
 
 **Important Notes:**
 - CHANGELOG.md is automatically imported by ChangeHistory.jsx - no manual syncing needed
 - Never include any "Co-Authored-By" lines anywhere (commits or changelog)
+- Empty sections should be omitted entirely (don't write "None" or leave them empty)
 
 ## Architecture
 
