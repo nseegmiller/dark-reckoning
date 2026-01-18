@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { useGame, ACTIONS } from '../context/GameContext'
 import { PLAYER_COLORS } from '../utils/colors'
 import { ConfirmDialog } from './ConfirmDialog'
-
-const FLUSH_DELAY_MS = 50
+import { FLUSH_DELAY_MS } from '../constants'
 
 export function SettingsMenu({ onClose }) {
   const { state, dispatch } = useGame()
@@ -19,15 +18,6 @@ export function SettingsMenu({ onClose }) {
 
   const handleRemovePlayer = (id) => {
     dispatch({ type: ACTIONS.REMOVE_PLAYER, payload: id })
-  }
-
-  const handleUndo = () => {
-    // Flush any pending score changes before undo
-    window.dispatchEvent(new CustomEvent('flushPendingScores'))
-    // Small delay to ensure flush completes
-    setTimeout(() => {
-      dispatch({ type: ACTIONS.UNDO })
-    }, FLUSH_DELAY_MS)
   }
 
   const handleNewGame = () => {
@@ -118,6 +108,7 @@ export function SettingsMenu({ onClose }) {
                               disabled={usedColors.includes(c.hex) && c.hex !== player.color}
                               className={`w-6 h-6 ${usedColors.includes(c.hex) && c.hex !== player.color ? 'opacity-30' : ''}`}
                               style={{ backgroundColor: c.hex }}
+                              aria-label={`Select ${c.name} color`}
                             />
                           ))}
                         </div>
@@ -199,13 +190,6 @@ export function SettingsMenu({ onClose }) {
 
             {/* Actions */}
             <div className="space-y-2">
-              <button
-                onClick={handleUndo}
-                disabled={state.history.length === 0}
-                className="pip-btn w-full disabled:opacity-30"
-              >
-                Undo Last Change
-              </button>
               <button
                 onClick={handleNewGame}
                 disabled={state.players.length === 0}

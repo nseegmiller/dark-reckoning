@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react'
+import { useRef, useCallback, useEffect } from 'react'
 
 const SWIPE_THRESHOLD = 20 // Minimum pixels to register a swipe
 const PIXELS_PER_UNIT = 30 // Every 30px = 1 unit
@@ -15,13 +15,13 @@ function transformDelta(deltaX, deltaY, rotation) {
   }
 }
 
-function calculateChange(delta, multiplier) {
+function calculateChange(delta) {
   if (Math.abs(delta) < SWIPE_THRESHOLD) return 0
   const units = Math.floor(Math.abs(delta) / PIXELS_PER_UNIT)
-  return Math.max(1, units) * multiplier * (delta > 0 ? 1 : -1)
+  return Math.max(1, units) * (delta > 0 ? 1 : -1)
 }
 
-export function useSwipe({ onSwipe, onPreview, multiplier = 1, rotation = 0 }) {
+export function useSwipe({ onSwipe, onPreview, rotation = 0 }) {
   const touchStart = useRef(null)
   const currentDelta = useRef({ x: 0, y: 0 })
 
@@ -50,17 +50,17 @@ export function useSwipe({ onSwipe, onPreview, multiplier = 1, rotation = 0 }) {
     // Call preview with current calculated change
     if (onPreview) {
       const transformedDelta = transformDelta(deltaX, deltaY, rotation)
-      const change = calculateChange(transformedDelta, multiplier)
+      const change = calculateChange(transformedDelta)
       onPreview(change)
     }
-  }, [onPreview, multiplier, rotation])
+  }, [onPreview, rotation])
 
   const handleTouchEnd = useCallback(() => {
     if (!touchStart.current) return
 
     const { x: deltaX, y: deltaY } = currentDelta.current
     const transformedDelta = transformDelta(deltaX, deltaY, rotation)
-    const change = calculateChange(transformedDelta, multiplier)
+    const change = calculateChange(transformedDelta)
 
     if (change !== 0) {
       onSwipe(change)
@@ -78,7 +78,7 @@ export function useSwipe({ onSwipe, onPreview, multiplier = 1, rotation = 0 }) {
 
     touchStart.current = null
     currentDelta.current = { x: 0, y: 0 }
-  }, [onSwipe, onPreview, multiplier, rotation])
+  }, [onSwipe, onPreview, rotation])
 
   const handleTouchCancel = useCallback(() => {
     if (onPreview) {
@@ -91,11 +91,6 @@ export function useSwipe({ onSwipe, onPreview, multiplier = 1, rotation = 0 }) {
   // Mouse support for desktop
   const mouseStart = useRef(null)
 
-  const handleMouseDown = useCallback((e) => {
-    mouseStart.current = { x: e.clientX, y: e.clientY }
-    currentDelta.current = { x: 0, y: 0 }
-  }, [])
-
   const handleMouseMove = useCallback((e) => {
     if (!mouseStart.current) return
     const deltaX = mouseStart.current.x - e.clientX
@@ -105,17 +100,17 @@ export function useSwipe({ onSwipe, onPreview, multiplier = 1, rotation = 0 }) {
     // Call preview with current calculated change
     if (onPreview) {
       const transformedDelta = transformDelta(deltaX, deltaY, rotation)
-      const change = calculateChange(transformedDelta, multiplier)
+      const change = calculateChange(transformedDelta)
       onPreview(change)
     }
-  }, [onPreview, multiplier, rotation])
+  }, [onPreview, rotation])
 
   const handleMouseUp = useCallback(() => {
     if (!mouseStart.current) return
 
     const { x: deltaX, y: deltaY } = currentDelta.current
     const transformedDelta = transformDelta(deltaX, deltaY, rotation)
-    const change = calculateChange(transformedDelta, multiplier)
+    const change = calculateChange(transformedDelta)
 
     if (change !== 0) {
       onSwipe(change)
@@ -128,15 +123,28 @@ export function useSwipe({ onSwipe, onPreview, multiplier = 1, rotation = 0 }) {
 
     mouseStart.current = null
     currentDelta.current = { x: 0, y: 0 }
-  }, [onSwipe, onPreview, multiplier, rotation])
 
-  const handleMouseLeave = useCallback(() => {
-    if (mouseStart.current && onPreview) {
-      onPreview(null)
-    }
-    mouseStart.current = null
+    // Remove global listeners
+    document.removeEventListener('mousemove', handleMouseMove)
+    document.removeEventListener('mouseup', handleMouseUp)
+  }, [onSwipe, onPreview, rotation, handleMouseMove])
+
+  const handleMouseDown = useCallback((e) => {
+    mouseStart.current = { x: e.clientX, y: e.clientY }
     currentDelta.current = { x: 0, y: 0 }
-  }, [onPreview])
+
+    // Add global listeners to track mouse even when it leaves the element
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  }, [handleMouseMove, handleMouseUp])
+
+  // Cleanup mouse listeners on unmount
+  useEffect(() => {
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [handleMouseMove, handleMouseUp])
 
   return {
     onTouchStart: handleTouchStart,
@@ -144,8 +152,5 @@ export function useSwipe({ onSwipe, onPreview, multiplier = 1, rotation = 0 }) {
     onTouchEnd: handleTouchEnd,
     onTouchCancel: handleTouchCancel,
     onMouseDown: handleMouseDown,
-    onMouseMove: handleMouseMove,
-    onMouseUp: handleMouseUp,
-    onMouseLeave: handleMouseLeave,
   }
 }

@@ -8,10 +8,16 @@ export const PlayerCell = memo(function PlayerCell({ player }) {
   const { state, dispatch } = useGame()
   const [previewChange, setPreviewChange] = useState(null)
   const [hasPendingChanges, setHasPendingChanges] = useState(false)
+
+  // Dual state tracking for accumulated changes:
+  // - accumulatedChange (state): Triggers UI re-renders to show pending changes
+  // - accumulatedChangeRef (ref): Used in callbacks/unmount without causing re-renders
+  // Both are needed to ensure correct values in all contexts (render vs callbacks)
   const [accumulatedChange, setAccumulatedChange] = useState(0)
+  const accumulatedChangeRef = useRef(0)
+
   const lastTapRef = useRef(0)
   const commitTimerRef = useRef(null)
-  const accumulatedChangeRef = useRef(0)
 
   const commitChanges = useCallback(() => {
     if (accumulatedChangeRef.current !== 0) {
@@ -66,7 +72,6 @@ export const PlayerCell = memo(function PlayerCell({ player }) {
   }, [handleRotate])
 
   const swipeHandlers = useSwipe({
-    multiplier: state.multiplier,
     rotation: player.rotation || 0,
     onSwipe: handleSwipe,
     onPreview: handlePreview,

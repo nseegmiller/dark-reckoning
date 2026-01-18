@@ -18,6 +18,21 @@ npm run preview  # Preview production build
 
 **IMPORTANT: Do not create temporary files in the project directory.** All temporary files (such as tmpclaude-* or similar) should be created in the system temp directory, not in the project root or any subdirectories. Keep the project directory clean and only include files that are part of the application.
 
+### Version Management
+
+The app version is managed in `src/version.js` with separate `VERSION_MAJOR` and `VERSION_MINOR` constants.
+
+**Version Update Rules:**
+- **IMPORTANT**: Update the version number in `src/version.js` BEFORE making each commit
+- **Update MINOR version**: Increment `VERSION_MINOR` by 1 before every commit with changes
+- **Update MAJOR version**: Only when explicitly requested by the user (increment `VERSION_MAJOR` by 1, reset `VERSION_MINOR` to 0), then commit
+- Current version is displayed in the header next to "Dark Reckoning"
+
+**Commit Workflow:**
+1. Make code changes
+2. Update version in `src/version.js` (increment MINOR by 1)
+3. Create the git commit with updated version included
+
 ## Architecture
 
 ### State Management Pattern

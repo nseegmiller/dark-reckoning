@@ -4,86 +4,132 @@ import { useGame } from '../context/GameContext'
 export function History({ onClose }) {
   const { state } = useGame()
 
-  // Create a Map for O(1) player lookups instead of O(n) find() calls
-  const playerMap = useMemo(() => {
-    return new Map(state.players.map(p => [p.id, p]))
-  }, [state.players])
+  // Organize history by player with calculated scores
+  const playerHistories = useMemo(() => {
+    // Create a map of player histories
+    const histories = {}
 
-  const getPlayerName = (playerId) => {
-    return playerMap.get(playerId)?.name || 'Unknown'
-  }
+    // Initialize each player's history array
+    state.players.forEach(player => {
+      histories[player.id] = {
+        player,
+        entries: []
+      }
+    })
 
-  const getPlayerColor = (playerId) => {
-    return playerMap.get(playerId)?.color || '#888'
-  }
+    // Build history entries with new scores
+    // History is stored [newest, ..., oldest], so we work backwards
+    const currentScores = {}
+    state.players.forEach(p => {
+      currentScores[p.id] = p.score
+    })
 
-  const formatTime = (timestamp) => {
-    const date = new Date(timestamp)
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  }
+    // Process history from newest to oldest
+    state.history.forEach(entry => {
+      if (histories[entry.playerId]) {
+        const newScore = currentScores[entry.playerId]
+
+        histories[entry.playerId].entries.push({
+          id: entry.id,
+          change: entry.change,
+          newScore,
+          timestamp: entry.timestamp
+        })
+
+        // Update current score for next iteration (subtract the change we just processed)
+        currentScores[entry.playerId] = newScore - entry.change
+      }
+    })
+
+    // Reverse entries so oldest is first
+    Object.values(histories).forEach(h => {
+      h.entries.reverse()
+    })
+
+    return histories
+  }, [state.players, state.history])
 
   return (
     <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(0,0,0,0.9)' }}
       role="dialog"
       aria-modal="true"
-      aria-labelledby="history-dialog-title"
+      aria-labelledby="history-title"
     >
-      <div
-        className="bg-game-card border border-game-border w-full max-w-md max-h-[80vh] flex flex-col"
-        style={{ clipPath: 'polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px)' }}
-      >
+      <div className="pip-panel w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="relative flex items-center justify-between p-4 border-b border-game-border">
-          <div className="absolute top-0 left-4 right-4 h-0.5 bg-game-accent" style={{ boxShadow: '0 0 10px rgba(99, 102, 241, 0.5)' }} />
-          <h2 id="history-dialog-title" className="text-lg font-bold uppercase tracking-widest text-game-glow pt-2"
-              style={{ fontFamily: 'Orbitron, monospace' }}>
-            History
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-1 text-gray-500 hover:text-white transition-colors"
-            aria-label="Close history"
-          >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+        <div className="flex items-center justify-between p-4 border-b pip-border">
+          <h2 id="history-title" className="text-lg uppercase tracking-widest pip-text">Score History</h2>
+          <button onClick={onClose} className="pip-text-dim hover:pip-text text-2xl" aria-label="Close history">&times;</button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-auto p-4">
           {state.history.length === 0 ? (
-            <p className="text-center text-gray-600 uppercase tracking-wider py-8">
+            <p className="text-center pip-text-dim uppercase tracking-wider py-8">
               No changes yet
             </p>
           ) : (
-            <ul className="space-y-2">
-              {state.history.map((entry) => (
-                <li
-                  key={entry.id}
-                  className="flex items-center gap-3 p-3 bg-game-bg/50 border border-game-border/50"
-                  style={{ clipPath: 'polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px)' }}
-                >
-                  <div
-                    className="w-2 h-8 flex-shrink-0"
-                    style={{ backgroundColor: getPlayerColor(entry.playerId), boxShadow: `0 0 8px ${getPlayerColor(entry.playerId)}` }}
-                  />
-                  <span className="flex-1 font-semibold uppercase tracking-wide text-sm">
-                    {getPlayerName(entry.playerId)}
-                  </span>
-                  <span
-                    className={`font-bold tabular-nums ${entry.change > 0 ? 'text-green-400' : 'text-red-400'}`}
-                    style={{ fontFamily: 'Orbitron, monospace' }}
-                  >
-                    {entry.change > 0 ? '+' : ''}{entry.change}
-                  </span>
-                  <span className="text-xs text-gray-600 tabular-nums">
-                    {formatTime(entry.timestamp)}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <div className="flex gap-4 min-w-min">
+              {state.players.map(player => {
+                const history = playerHistories[player.id]
+                return (
+                  <div key={player.id} className="flex-1 min-w-[120px]">
+                    {/* Player header */}
+                    <div className="mb-3 pb-2 border-b pip-border">
+                      <div
+                        className="text-sm uppercase tracking-wider font-bold mb-1"
+                        style={{ color: player.color, textShadow: `0 0 10px ${player.color}80` }}
+                      >
+                        {player.name}
+                      </div>
+                      <div className="text-xs pip-text-dim">
+                        {history.entries.length} {history.entries.length === 1 ? 'change' : 'changes'}
+                      </div>
+                    </div>
+
+                    {/* History entries */}
+                    <div className="space-y-2">
+                      {history.entries.length === 0 ? (
+                        <div className="text-xs pip-text-dim text-center py-4">
+                          No changes
+                        </div>
+                      ) : (
+                        history.entries.map(entry => (
+                          <div
+                            key={entry.id}
+                            className="p-2 border pip-border bg-[var(--pip-bg)]"
+                          >
+                            {/* Delta */}
+                            <div
+                              className="text-center text-sm font-bold mb-1"
+                              style={{
+                                color: entry.change > 0 ? '#4ade80' : '#f87171',
+                                textShadow: entry.change > 0 ? '0 0 8px rgba(74, 222, 128, 0.6)' : '0 0 8px rgba(248, 113, 113, 0.6)'
+                              }}
+                            >
+                              {entry.change > 0 ? '+' : ''}{entry.change}
+                            </div>
+
+                            {/* New score */}
+                            <div
+                              className="text-center text-lg font-bold"
+                              style={{
+                                color: player.color,
+                                textShadow: `0 0 10px ${player.color}80`
+                              }}
+                            >
+                              {entry.newScore}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           )}
         </div>
       </div>

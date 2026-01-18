@@ -8,7 +8,6 @@ const SAVE_DEBOUNCE_MS = 500
 export const ACTIONS = {
   LOAD_STATE: 'LOAD_STATE',
   SET_THEME: 'SET_THEME',
-  SET_MULTIPLIER: 'SET_MULTIPLIER',
   ADD_PLAYER: 'ADD_PLAYER',
   REMOVE_PLAYER: 'REMOVE_PLAYER',
   UPDATE_PLAYER: 'UPDATE_PLAYER',
@@ -21,7 +20,6 @@ export const ACTIONS = {
 
 const initialState = {
   theme: 'atompunk',
-  multiplier: 1,
   players: [],
   history: [],
 }
@@ -62,7 +60,6 @@ function validateLoadedState(payload) {
 
   const validatedState = {
     theme,
-    multiplier: [1, 5, 10].includes(payload.multiplier) ? payload.multiplier : 1,
     players: [],
     history: [],
   }
@@ -105,9 +102,6 @@ function gameReducer(state, action) {
       return { ...state, theme: newTheme }
     }
 
-    case ACTIONS.SET_MULTIPLIER:
-      return { ...state, multiplier: action.payload }
-
     case ACTIONS.ADD_PLAYER: {
       if (state.players.length >= 8) return state
       const usedColors = state.players.map(p => p.color)
@@ -137,15 +131,18 @@ function gameReducer(state, action) {
         ),
       }
 
-    case ACTIONS.ROTATE_PLAYER:
+    case ACTIONS.ROTATE_PLAYER: {
       return {
         ...state,
-        players: state.players.map(p =>
-          p.id === action.payload
-            ? { ...p, rotation: (p.rotation || 0) + 90 }
-            : p
-        ),
+        players: state.players.map(p => {
+          if (p.id === action.payload) {
+            const newRotation = (p.rotation || 0) + 90
+            return { ...p, rotation: newRotation === 360 ? 0 : newRotation }
+          }
+          return p
+        }),
       }
+    }
 
     case ACTIONS.ADJUST_SCORE: {
       const { playerId, change } = action.payload
