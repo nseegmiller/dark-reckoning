@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useGame, ACTIONS } from '../context/GameContext'
 import { History } from './History'
+import { ChangeHistory } from './ChangeHistory'
 import { VERSION } from '../version'
 import { FLUSH_DELAY_MS } from '../constants'
 
 export function Header({ onSettingsClick }) {
   const { state, dispatch } = useGame()
   const [showHistory, setShowHistory] = useState(false)
+  const [showChangeHistory, setShowChangeHistory] = useState(false)
 
   const handleUndo = () => {
     // Flush any pending score changes before undo
@@ -32,7 +34,16 @@ export function Header({ onSettingsClick }) {
           <h1 className="text-lg uppercase tracking-widest pip-text">
             Dark Reckoning
           </h1>
-          <span className="text-xs pip-text-dim">{VERSION}</span>
+          <span
+            onClick={() => setShowChangeHistory(true)}
+            className="text-xs pip-text-dim cursor-pointer hover:pip-text transition-colors"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && setShowChangeHistory(true)}
+            aria-label="View change history"
+          >
+            {VERSION}
+          </span>
         </div>
 
         <div className="flex items-center gap-4">
@@ -71,6 +82,9 @@ export function Header({ onSettingsClick }) {
 
       {/* History popup */}
       {showHistory && <History onClose={() => setShowHistory(false)} />}
+
+      {/* Change History popup */}
+      {showChangeHistory && <ChangeHistory onClose={() => setShowChangeHistory(false)} />}
     </>
   )
 }

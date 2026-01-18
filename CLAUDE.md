@@ -31,7 +31,17 @@ The app version is managed in `src/version.js` with separate `VERSION_MAJOR` and
 **Commit Workflow:**
 1. Make code changes
 2. Update version in `src/version.js` (increment MINOR by 1)
-3. Create the git commit with updated version included
+3. Generate commit message and add it to `CHANGELOG.md`:
+   - Add new version section at the top (e.g., `## v0.8`)
+   - Include sections: **Features:**, **Bug Fixes:**, **Code Quality:**
+   - List changes as bullet points (`- Change description`)
+4. Create the git commit with updated version and changelog included
+   - Commit message should match CHANGELOG.md content exactly
+   - Use the version number as the first line (e.g., "v0.8: Brief summary")
+
+**Important Notes:**
+- CHANGELOG.md is automatically imported by ChangeHistory.jsx - no manual syncing needed
+- Never include any "Co-Authored-By" lines anywhere (commits or changelog)
 
 ## Architecture
 
