@@ -136,8 +136,11 @@ function gameReducer(state, action) {
         ...state,
         players: state.players.map(p => {
           if (p.id === action.payload) {
-            const newRotation = (p.rotation || 0) + 90
-            return { ...p, rotation: newRotation === 360 ? 0 : newRotation }
+            // Normalize to 0-270 range first (visually identical), then add 90
+            // This prevents backwards animation when values get high
+            const currentRotation = (p.rotation || 0) % 360
+            const newRotation = currentRotation + 90
+            return { ...p, rotation: newRotation }
           }
           return p
         }),

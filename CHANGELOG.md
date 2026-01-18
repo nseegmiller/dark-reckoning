@@ -1,5 +1,15 @@
 # Change History
 
+## v0.9
+
+**Features:**
+- Add tap-to-adjust score (tap above score for +1, below for -1, works with rotation)
+- Remove double-tap to rotate (use rotation button in top-right corner instead)
+- Improve rotation animation to always rotate clockwise, never backwards
+
+**Bug Fixes:**
+- Fix rotation button accidentally triggering score changes
+
 ## v0.8
 
 **Features:**

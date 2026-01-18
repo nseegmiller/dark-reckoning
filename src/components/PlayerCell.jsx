@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, memo, useEffect } from 'react'
+import { useState, useCallback, useRef, memo, useEffect, useLayoutEffect } from 'react'
 import { useGame, ACTIONS } from '../context/GameContext'
 import { useSwipe } from '../hooks/useSwipe'
 
@@ -16,8 +16,12 @@ export const PlayerCell = memo(function PlayerCell({ player }) {
   const [accumulatedChange, setAccumulatedChange] = useState(0)
   const accumulatedChangeRef = useRef(0)
 
-  const lastTapRef = useRef(0)
   const commitTimerRef = useRef(null)
+
+  // Track rotation for smooth transitions (avoid backwards animation on normalization)
+  const prevRotationRef = useRef(player.rotation || 0)
+  const [visualRotation, setVisualRotation] = useState(player.rotation || 0)
+  const [skipTransition, setSkipTransition] = useState(false)
 
   const commitChanges = useCallback(() => {
     if (accumulatedChangeRef.current !== 0) {
@@ -32,7 +36,7 @@ export const PlayerCell = memo(function PlayerCell({ player }) {
     }
   }, [dispatch, player.id])
 
-  const handleSwipe = useCallback((change) => {
+  const handleScoreChange = useCallback((change) => {
     // Accumulate the change instead of dispatching immediately
     const newValue = accumulatedChangeRef.current + change
     accumulatedChangeRef.current = newValue
@@ -60,21 +64,11 @@ export const PlayerCell = memo(function PlayerCell({ player }) {
     dispatch({ type: ACTIONS.ROTATE_PLAYER, payload: player.id })
   }, [commitChanges, dispatch, player.id])
 
-  // Double-tap detection
-  const handleDoubleTap = useCallback(() => {
-    const now = Date.now()
-    if (now - lastTapRef.current < 300) {
-      handleRotate()
-      lastTapRef.current = 0 // Reset to prevent triple-tap
-    } else {
-      lastTapRef.current = now
-    }
-  }, [handleRotate])
-
   const swipeHandlers = useSwipe({
     rotation: player.rotation || 0,
-    onSwipe: handleSwipe,
+    onSwipe: handleScoreChange,
     onPreview: handlePreview,
+    onTap: handleScoreChange,
   })
 
   // Show both accumulated changes and current preview
@@ -112,10 +106,34 @@ export const PlayerCell = memo(function PlayerCell({ player }) {
     }
   }, [commitChanges])
 
+  // Detect rotation normalization (value decreased) and handle smoothly
+  useLayoutEffect(() => {
+    const currentRotation = player.rotation || 0
+    const prevRotation = prevRotationRef.current
+
+    if (currentRotation < prevRotation) {
+      // Normalization happened (e.g., 360 → 90)
+      // First, instantly jump to the equivalent lower position (e.g., 360 → 0)
+      const equivalentPrevious = prevRotation % 360
+      setVisualRotation(equivalentPrevious)
+      setSkipTransition(true)
+
+      // Then on next frame, animate to new position (e.g., 0 → 90)
+      requestAnimationFrame(() => {
+        setSkipTransition(false)
+        setVisualRotation(currentRotation)
+      })
+    } else {
+      // Normal rotation, just update
+      setVisualRotation(currentRotation)
+    }
+
+    prevRotationRef.current = currentRotation
+  }, [player.rotation])
+
   return (
     <div
       {...swipeHandlers}
-      onClick={handleDoubleTap}
       className={`relative flex items-center justify-center select-none touch-none cursor-ns-resize overflow-hidden ${
         hasPendingChanges ? 'animate-pulse-subtle' : ''
       }`}
@@ -131,6 +149,8 @@ export const PlayerCell = memo(function PlayerCell({ player }) {
           e.stopPropagation()
           handleRotate()
         }}
+        onMouseDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
         className="absolute top-2 right-2 z-10 w-8 h-8 flex items-center justify-center pip-text-dim hover:pip-text transition-colors text-lg"
         style={{ textShadow: '0 0 10px var(--pip-green-glow)' }}
         aria-label="Rotate player"
@@ -146,8 +166,8 @@ export const PlayerCell = memo(function PlayerCell({ player }) {
 
       {/* Rotated content */}
       <div
-        className="flex flex-col items-center justify-center transition-transform duration-200"
-        style={{ transform: `rotate(${rotation}deg)` }}
+        className={`flex flex-col items-center justify-center ${skipTransition ? '' : 'transition-transform duration-200'}`}
+        style={{ transform: `rotate(${visualRotation}deg)` }}
       >
         {/* Player name */}
         <div

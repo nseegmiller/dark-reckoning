@@ -21,9 +21,10 @@ function calculateChange(delta) {
   return Math.max(1, units) * (delta > 0 ? 1 : -1)
 }
 
-export function useSwipe({ onSwipe, onPreview, rotation = 0 }) {
+export function useSwipe({ onSwipe, onPreview, onTap, rotation = 0 }) {
   const touchStart = useRef(null)
   const currentDelta = useRef({ x: 0, y: 0 })
+  const elementRef = useRef(null)  // Store element reference for tap detection
 
   const handleTouchStart = useCallback((e) => {
     if (!e.touches || !e.touches[0]) return
@@ -33,6 +34,7 @@ export function useSwipe({ onSwipe, onPreview, rotation = 0 }) {
       time: Date.now(),
     }
     currentDelta.current = { x: 0, y: 0 }
+    elementRef.current = e.currentTarget  // Store element for tap detection
   }, [])
 
   const handleTouchMove = useCallback((e) => {
@@ -55,7 +57,7 @@ export function useSwipe({ onSwipe, onPreview, rotation = 0 }) {
     }
   }, [onPreview, rotation])
 
-  const handleTouchEnd = useCallback(() => {
+  const handleTouchEnd = useCallback((e) => {
     if (!touchStart.current) return
 
     const { x: deltaX, y: deltaY } = currentDelta.current
@@ -69,6 +71,21 @@ export function useSwipe({ onSwipe, onPreview, rotation = 0 }) {
       if (navigator.vibrate) {
         navigator.vibrate(10)
       }
+    } else if (onTap && Math.abs(deltaX) < 5 && Math.abs(deltaY) < 5 && elementRef.current) {
+      // This was a tap (minimal movement), determine direction based on position
+      const touch = e.changedTouches?.[0]
+      if (touch) {
+        const rect = elementRef.current.getBoundingClientRect()
+        const centerX = rect.width / 2
+        const centerY = rect.height / 2
+        const tapX = touch.clientX - rect.left - centerX
+        const tapY = touch.clientY - rect.top - centerY
+
+        // Use transformDelta with tap position as if it were a swipe direction
+        // Positive values mean tapped right/down, negative means tapped left/up
+        const tapDelta = transformDelta(-tapX, -tapY, rotation)
+        onTap(tapDelta > 0 ? 1 : -1)
+      }
     }
 
     // Clear preview
@@ -78,7 +95,8 @@ export function useSwipe({ onSwipe, onPreview, rotation = 0 }) {
 
     touchStart.current = null
     currentDelta.current = { x: 0, y: 0 }
-  }, [onSwipe, onPreview, rotation])
+    elementRef.current = null
+  }, [onSwipe, onPreview, onTap, rotation])
 
   const handleTouchCancel = useCallback(() => {
     if (onPreview) {
@@ -86,6 +104,7 @@ export function useSwipe({ onSwipe, onPreview, rotation = 0 }) {
     }
     touchStart.current = null
     currentDelta.current = { x: 0, y: 0 }
+    elementRef.current = null
   }, [onPreview])
 
   // Mouse support for desktop
@@ -105,7 +124,7 @@ export function useSwipe({ onSwipe, onPreview, rotation = 0 }) {
     }
   }, [onPreview, rotation])
 
-  const handleMouseUp = useCallback(() => {
+  const handleMouseUp = useCallback((e) => {
     if (!mouseStart.current) return
 
     const { x: deltaX, y: deltaY } = currentDelta.current
@@ -114,6 +133,17 @@ export function useSwipe({ onSwipe, onPreview, rotation = 0 }) {
 
     if (change !== 0) {
       onSwipe(change)
+    } else if (onTap && Math.abs(deltaX) < 5 && Math.abs(deltaY) < 5 && elementRef.current) {
+      // This was a click (minimal movement), determine direction based on position
+      const rect = elementRef.current.getBoundingClientRect()
+      const centerX = rect.width / 2
+      const centerY = rect.height / 2
+      const tapX = e.clientX - rect.left - centerX
+      const tapY = e.clientY - rect.top - centerY
+
+      // Use transformDelta with tap position as if it were a swipe direction
+      const tapDelta = transformDelta(-tapX, -tapY, rotation)
+      onTap(tapDelta > 0 ? 1 : -1)
     }
 
     // Clear preview
@@ -123,15 +153,17 @@ export function useSwipe({ onSwipe, onPreview, rotation = 0 }) {
 
     mouseStart.current = null
     currentDelta.current = { x: 0, y: 0 }
+    elementRef.current = null
 
     // Remove global listeners
     document.removeEventListener('mousemove', handleMouseMove)
     document.removeEventListener('mouseup', handleMouseUp)
-  }, [onSwipe, onPreview, rotation, handleMouseMove])
+  }, [onSwipe, onPreview, onTap, rotation, handleMouseMove])
 
   const handleMouseDown = useCallback((e) => {
     mouseStart.current = { x: e.clientX, y: e.clientY }
     currentDelta.current = { x: 0, y: 0 }
+    elementRef.current = e.currentTarget  // Store element for tap detection
 
     // Add global listeners to track mouse even when it leaves the element
     document.addEventListener('mousemove', handleMouseMove)
