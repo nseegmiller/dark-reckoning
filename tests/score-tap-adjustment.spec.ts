@@ -34,9 +34,10 @@ test.describe('Score Adjustment', () => {
     }
 
     // Calculate positions for top and bottom taps
+    // Tap detection is biased toward +1: only bottom ~30% gives -1
     const centerX = boundingBox.x + boundingBox.width / 2;
-    const topY = boundingBox.y + boundingBox.height * 0.25; // Top quarter
-    const bottomY = boundingBox.y + boundingBox.height * 0.75; // Bottom quarter
+    const topY = boundingBox.y + boundingBox.height * 0.25; // Top quarter (gives +1)
+    const bottomY = boundingBox.y + boundingBox.height * 0.9; // Bottom 10% (gives -1)
 
     // Single tap on the TOP half - score should increase by 1
     await page.mouse.click(centerX, topY);

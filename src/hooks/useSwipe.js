@@ -86,7 +86,12 @@ export function useSwipe({ onSwipe, onPreview, onTap, rotation = 0 }) {
         // Use transformDelta with tap position as if it were a swipe direction
         // Positive values mean tapped right/down, negative means tapped left/up
         const tapDelta = transformDelta(-tapX, -tapY, rotation)
-        onTap(tapDelta > 0 ? 1 : -1)
+        // Bias toward +1: only return -1 if tap is fully in bottom ~30% of cell
+        // Use the correct axis based on rotation (vertical for 0/180, horizontal for 90/270)
+        const normalizedRotation = ((rotation % 360) + 360) % 360
+        const relevantCenter = (normalizedRotation === 90 || normalizedRotation === 270) ? centerX : centerY
+        const biasThreshold = -relevantCenter * 0.4
+        onTap(tapDelta >= biasThreshold ? 1 : -1)
       }
     }
 
@@ -145,7 +150,12 @@ export function useSwipe({ onSwipe, onPreview, onTap, rotation = 0 }) {
 
       // Use transformDelta with tap position as if it were a swipe direction
       const tapDelta = transformDelta(-tapX, -tapY, rotation)
-      onTap(tapDelta > 0 ? 1 : -1)
+      // Bias toward +1: only return -1 if tap is fully in bottom ~30% of cell
+      // Use the correct axis based on rotation (vertical for 0/180, horizontal for 90/270)
+      const normalizedRotation = ((rotation % 360) + 360) % 360
+      const relevantCenter = (normalizedRotation === 90 || normalizedRotation === 270) ? centerX : centerY
+      const biasThreshold = -relevantCenter * 0.4
+      onTap(tapDelta >= biasThreshold ? 1 : -1)
     }
 
     // Clear preview

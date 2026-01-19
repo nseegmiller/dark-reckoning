@@ -1,5 +1,13 @@
 # Change History
 
+## v0.11
+
+**Features:**
+- Bias tap detection toward +1 (only bottom ~30% triggers -1)
+
+**Bug Fixes:**
+- Fix tap detection using wrong axis for threshold calculation with different cell dimensions
+
 ## v0.10
 
 **Features:**
