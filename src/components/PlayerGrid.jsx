@@ -7,7 +7,7 @@ export function PlayerGrid() {
   if (state.players.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div className="text-center pip-text-dim">
+        <div className="text-center dr-text-dim">
           <p className="text-xl uppercase tracking-widest mb-2">[ No Players ]</p>
           <p className="text-sm">Open settings to add players</p>
         </div>

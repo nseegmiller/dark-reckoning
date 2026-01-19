@@ -1,5 +1,12 @@
 # Change History
 
+## v0.10
+
+**Features:**
+- Add Playwright E2E testing infrastructure with tap-to-adjust score test
+- Add comprehensive README with installation, usage, and testing instructions
+- Add testing documentation to CLAUDE.md
+
 ## v0.9
 
 **Features:**

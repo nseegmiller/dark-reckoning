@@ -94,3 +94,10 @@ dist/
 .claude/settings.local.json
 tmpclaude-*-cwd
 nul
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

@@ -57,79 +57,88 @@ export function History({ onClose }) {
       aria-modal="true"
       aria-labelledby="history-title"
     >
-      <div className="pip-panel w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="dr-panel w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b pip-border">
-          <h2 id="history-title" className="text-lg uppercase tracking-widest pip-text">Score History</h2>
-          <button onClick={onClose} className="pip-text-dim hover:pip-text text-2xl" aria-label="Close history">&times;</button>
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b dr-border">
+          <h2 id="history-title" className="text-lg uppercase tracking-widest dr-text">Score History</h2>
+          <button onClick={onClose} className="dialog-close dr-text-dim hover:dr-text" aria-label="Close history">&times;</button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto p-4">
+        <div className="flex-1 overflow-auto p-3 sm:p-4">
           {state.history.length === 0 ? (
-            <p className="text-center pip-text-dim uppercase tracking-wider py-8">
+            <p className="text-center dr-text-dim uppercase tracking-wider py-8">
               No changes yet
             </p>
           ) : (
-            <div className="flex gap-4 min-w-min">
-              {state.players.map(player => {
-                const history = playerHistories[player.id]
-                return (
-                  <div key={player.id} className="flex-1 min-w-[120px]">
-                    {/* Player header */}
-                    <div className="mb-3 pb-2 border-b pip-border">
-                      <div
-                        className="text-sm uppercase tracking-wider font-bold mb-1"
-                        style={{ color: player.color, textShadow: `0 0 10px ${player.color}80` }}
-                      >
-                        {player.name}
-                      </div>
-                      <div className="text-xs pip-text-dim">
-                        {history.entries.length} {history.entries.length === 1 ? 'change' : 'changes'}
-                      </div>
-                    </div>
-
-                    {/* History entries */}
-                    <div className="space-y-2">
-                      {history.entries.length === 0 ? (
-                        <div className="text-xs pip-text-dim text-center py-4">
-                          No changes
+            <>
+              {/* Scroll hint for mobile */}
+              {state.players.length > 2 && (
+                <p className="text-xs dr-text-dim text-center mb-3 sm:hidden">
+                  ← Swipe to see all players →
+                </p>
+              )}
+              <div className="flex gap-3 sm:gap-4 min-w-min pb-2 overflow-x-auto scrollbar-thin">
+                {state.players.map(player => {
+                  const history = playerHistories[player.id]
+                  return (
+                    <div key={player.id} className="flex-1 min-w-[100px] sm:min-w-[120px]">
+                      {/* Player header */}
+                      <div className="mb-3 pb-2 border-b dr-border">
+                        <div
+                          className="text-xs sm:text-sm uppercase tracking-wider font-bold mb-1 truncate"
+                          style={{ color: player.color, textShadow: `0 0 10px ${player.color}80` }}
+                        >
+                          {player.name}
                         </div>
-                      ) : (
-                        history.entries.map(entry => (
-                          <div
-                            key={entry.id}
-                            className="p-2 border pip-border bg-[var(--pip-bg)]"
-                          >
-                            {/* Delta */}
-                            <div
-                              className="text-center text-sm font-bold mb-1"
-                              style={{
-                                color: entry.change > 0 ? '#4ade80' : '#f87171',
-                                textShadow: entry.change > 0 ? '0 0 8px rgba(74, 222, 128, 0.6)' : '0 0 8px rgba(248, 113, 113, 0.6)'
-                              }}
-                            >
-                              {entry.change > 0 ? '+' : ''}{entry.change}
-                            </div>
+                        <div className="text-xs dr-text-dim">
+                          {history.entries.length} {history.entries.length === 1 ? 'change' : 'changes'}
+                        </div>
+                      </div>
 
-                            {/* New score */}
-                            <div
-                              className="text-center text-lg font-bold"
-                              style={{
-                                color: player.color,
-                                textShadow: `0 0 10px ${player.color}80`
-                              }}
-                            >
-                              {entry.newScore}
-                            </div>
+                      {/* History entries */}
+                      <div className="space-y-2">
+                        {history.entries.length === 0 ? (
+                          <div className="text-xs dr-text-dim text-center py-4">
+                            No changes
                           </div>
-                        ))
-                      )}
+                        ) : (
+                          history.entries.map(entry => (
+                            <div
+                              key={entry.id}
+                              className="p-2 border dr-border bg-[var(--dr-bg)]"
+                              style={{ borderRadius: 'var(--theme-border-radius)' }}
+                            >
+                              {/* Delta */}
+                              <div
+                                className="text-center text-sm font-bold mb-1"
+                                style={{
+                                  color: entry.change > 0 ? '#4ade80' : '#f87171',
+                                  textShadow: entry.change > 0 ? '0 0 8px rgba(74, 222, 128, 0.6)' : '0 0 8px rgba(248, 113, 113, 0.6)'
+                                }}
+                              >
+                                {entry.change > 0 ? '+' : ''}{entry.change}
+                              </div>
+
+                              {/* New score */}
+                              <div
+                                className="text-center text-lg font-bold tabular-nums"
+                                style={{
+                                  color: player.color,
+                                  textShadow: `0 0 10px ${player.color}80`
+                                }}
+                              >
+                                {entry.newScore}
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )
-              })}
-            </div>
+                  )
+                })}
+              </div>
+            </>
           )}
         </div>
       </div>

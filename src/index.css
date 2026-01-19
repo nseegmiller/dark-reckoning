@@ -19,12 +19,12 @@
   --theme-animation-duration: 8s;
 
   /* Legacy variable names for backward compatibility */
-  --pip-green: var(--theme-primary);
-  --pip-green-dim: var(--theme-primary-dim);
-  --pip-green-glow: var(--theme-glow);
-  --pip-bg: var(--theme-bg);
-  --pip-bg-light: var(--theme-bg-light);
-  --pip-border: var(--theme-border);
+  --dr-green: var(--theme-primary);
+  --dr-green-dim: var(--theme-primary-dim);
+  --dr-green-glow: var(--theme-glow);
+  --dr-bg: var(--theme-bg);
+  --dr-bg-light: var(--theme-bg-light);
+  --dr-border: var(--theme-border);
 }
 
 /* Atom Punk Theme (Fallout-style terminal) */
@@ -156,20 +156,20 @@
 }
 
 @layer components {
-  .pip-text {
+  .dr-text {
     color: var(--theme-primary);
     text-shadow: 0 0 12px var(--theme-glow);
   }
 
-  .pip-text-dim {
+  .dr-text-dim {
     color: var(--theme-primary-dim);
   }
 
-  .pip-border {
+  .dr-border {
     border-color: var(--theme-primary-dim);
   }
 
-  .pip-btn {
+  .dr-btn {
     @apply px-4 py-2 uppercase tracking-wider text-sm select-none;
     background: transparent;
     border: 1px solid var(--theme-primary-dim);
@@ -178,45 +178,51 @@
     transition: all var(--theme-transition) ease;
     position: relative;
     overflow: hidden;
+    min-height: 44px; /* Touch-friendly minimum height */
+    touch-action: manipulation;
   }
 
-  .pip-btn:active {
-    transform: scale(0.95);
+  .dr-btn:active {
+    transform: scale(0.97);
   }
 
   /* Atom Punk button style */
-  .theme-atompunk .pip-btn:hover {
+  .theme-atompunk .dr-btn:hover {
     background-color: var(--theme-glow);
     border-color: var(--theme-primary);
     box-shadow: 0 0 10px var(--theme-glow), inset 0 0 10px var(--theme-glow);
   }
 
-  .theme-atompunk .pip-btn-active {
+  .theme-atompunk .dr-btn-active {
     background: var(--theme-glow);
     border-color: var(--theme-primary);
     box-shadow: 0 0 15px var(--theme-glow);
   }
 
   /* Nebula button style - gradient shimmer effect */
-  .theme-nebula .pip-btn {
+  .theme-nebula .dr-btn {
     border-width: 2px;
     font-weight: 500;
   }
 
-  .theme-nebula .pip-btn:hover {
+  .theme-nebula .dr-btn:hover {
     background: linear-gradient(135deg, var(--theme-glow) 0%, var(--theme-accent-glow) 100%);
     border-color: var(--theme-primary);
     box-shadow: 0 0 20px var(--theme-glow), 0 4px 15px var(--theme-glow);
-    transform: translateY(-2px);
   }
 
-  .theme-nebula .pip-btn-active {
+  .theme-nebula .dr-btn:active {
+    transform: scale(0.97);
+    box-shadow: 0 0 15px var(--theme-glow);
+  }
+
+  .theme-nebula .dr-btn-active {
     background: linear-gradient(135deg, var(--theme-glow) 0%, var(--theme-accent-glow) 100%);
     border-color: var(--theme-primary);
     box-shadow: 0 0 25px var(--theme-glow), 0 0 40px var(--theme-accent-glow);
   }
 
-  .pip-panel {
+  .dr-panel {
     background: var(--theme-bg-light);
     border: 1px solid var(--theme-primary-dim);
     box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
@@ -226,12 +232,12 @@
   }
 
   /* Atom Punk panel - sharp, terminal style */
-  .theme-atompunk .pip-panel {
+  .theme-atompunk .dr-panel {
     border-width: 1px;
   }
 
   /* Nebula panel - sleek with extra glow */
-  .theme-nebula .pip-panel {
+  .theme-nebula .dr-panel {
     border-width: 2px;
     box-shadow:
       inset 0 0 30px rgba(0, 0, 0, 0.5),
@@ -299,5 +305,35 @@
   /* Atom Punk settings icon - sharper */
   .theme-atompunk header button:hover svg {
     filter: drop-shadow(0 0 6px var(--theme-glow));
+  }
+
+  /* Close button styling for dialogs */
+  .dialog-close {
+    @apply w-10 h-10 flex items-center justify-center text-2xl;
+    touch-action: manipulation;
+  }
+
+  /* Scrollbar styling for horizontal scroll areas */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--theme-primary-dim) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: var(--theme-primary-dim);
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: var(--theme-primary);
   }
 }

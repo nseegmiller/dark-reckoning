@@ -25,9 +25,11 @@ export function useSwipe({ onSwipe, onPreview, onTap, rotation = 0 }) {
   const touchStart = useRef(null)
   const currentDelta = useRef({ x: 0, y: 0 })
   const elementRef = useRef(null)  // Store element reference for tap detection
+  const lastTouchTimeRef = useRef(0)  // Track touch events to prevent duplicate mouse events
 
   const handleTouchStart = useCallback((e) => {
     if (!e.touches || !e.touches[0]) return
+    lastTouchTimeRef.current = Date.now()  // Mark that touch is being used
     touchStart.current = {
       x: e.touches[0].clientX,
       y: e.touches[0].clientY,
@@ -161,6 +163,12 @@ export function useSwipe({ onSwipe, onPreview, onTap, rotation = 0 }) {
   }, [onSwipe, onPreview, onTap, rotation, handleMouseMove])
 
   const handleMouseDown = useCallback((e) => {
+    // Skip if this is a synthetic mouse event following a touch event
+    // Mobile browsers fire both touch and mouse events for compatibility
+    if (Date.now() - lastTouchTimeRef.current < 500) {
+      return
+    }
+
     mouseStart.current = { x: e.clientX, y: e.clientY }
     currentDelta.current = { x: 0, y: 0 }
     elementRef.current = e.currentTarget  // Store element for tap detection

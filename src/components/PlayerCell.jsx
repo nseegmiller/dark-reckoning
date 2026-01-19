@@ -138,7 +138,7 @@ export const PlayerCell = memo(function PlayerCell({ player }) {
         hasPendingChanges ? 'animate-pulse-subtle' : ''
       }`}
       style={{
-        backgroundColor: 'var(--pip-bg)',
+        backgroundColor: 'var(--dr-bg)',
         border: hasPendingChanges ? `2px solid ${player.color}` : 'none',
         boxShadow: hasPendingChanges ? `0 0 15px ${player.color}80` : 'none',
       }}
@@ -151,8 +151,8 @@ export const PlayerCell = memo(function PlayerCell({ player }) {
         }}
         onMouseDown={(e) => e.stopPropagation()}
         onTouchStart={(e) => e.stopPropagation()}
-        className="absolute top-2 right-2 z-10 w-8 h-8 flex items-center justify-center pip-text-dim hover:pip-text transition-colors text-lg"
-        style={{ textShadow: '0 0 10px var(--pip-green-glow)' }}
+        className="absolute top-1 right-1 sm:top-2 sm:right-2 z-10 w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center dr-text-dim hover:dr-text active:dr-text transition-colors text-xl sm:text-lg touch-manipulation"
+        style={{ textShadow: '0 0 10px var(--dr-green-glow)' }}
         aria-label="Rotate player"
       >
         ↻
@@ -166,12 +166,12 @@ export const PlayerCell = memo(function PlayerCell({ player }) {
 
       {/* Rotated content */}
       <div
-        className={`flex flex-col items-center justify-center ${skipTransition ? '' : 'transition-transform duration-200'}`}
+        className={`flex flex-col items-center justify-center px-2 ${skipTransition ? '' : 'transition-transform duration-200'}`}
         style={{ transform: `rotate(${visualRotation}deg)` }}
       >
         {/* Player name */}
         <div
-          className="text-2xl uppercase tracking-widest mb-2"
+          className="text-lg sm:text-2xl uppercase tracking-widest mb-1 sm:mb-2 max-w-full truncate"
           style={{ color: player.color, textShadow: `0 0 10px ${player.color}80` }}
         >
           {player.name}

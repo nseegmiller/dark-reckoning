@@ -8,29 +8,29 @@ export function ConfirmDialog({ title, message, onConfirm, onCancel, confirmText
       aria-labelledby="confirm-dialog-title"
       aria-describedby="confirm-dialog-message"
     >
-      <div className="pip-panel w-full max-w-sm">
+      <div className="dr-panel w-full max-w-sm">
         {/* Header */}
-        <div className="p-4 border-b pip-border">
-          <h3 id="confirm-dialog-title" className="text-lg uppercase tracking-widest pip-text">{title}</h3>
+        <div className="p-3 sm:p-4 border-b dr-border">
+          <h3 id="confirm-dialog-title" className="text-lg uppercase tracking-widest dr-text">{title}</h3>
         </div>
 
         {/* Message */}
-        <div className="p-4">
-          <p id="confirm-dialog-message" className="pip-text-dim">{message}</p>
+        <div className="p-3 sm:p-4">
+          <p id="confirm-dialog-message" className="dr-text-dim">{message}</p>
         </div>
 
         {/* Actions */}
-        <div className="p-4 border-t pip-border flex gap-3">
+        <div className="p-3 sm:p-4 border-t dr-border flex gap-2 sm:gap-3">
           <button
             onClick={onCancel}
-            className="pip-btn flex-1"
+            className="dr-btn flex-1"
             aria-label={cancelText}
           >
             {cancelText}
           </button>
           <button
             onClick={onConfirm}
-            className={`pip-btn flex-1 ${danger ? 'text-red-400 border-red-400/50 hover:border-red-400 hover:shadow-[0_0_10px_rgba(248,113,113,0.3)]' : 'pip-btn-active'}`}
+            className={`dr-btn flex-1 ${danger ? 'text-red-400 border-red-400/50 hover:border-red-400 hover:shadow-[0_0_10px_rgba(248,113,113,0.3)]' : 'dr-btn-active'}`}
             aria-label={confirmText}
           >
             {confirmText}

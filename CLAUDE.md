@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Dark Reckoning is a score tracking web application for the board game "Dark Reckoning". It's a React + Vite application with a Pip-Boy inspired terminal aesthetic, designed for mobile-first touch interactions with swipe gestures to adjust scores.
+Dark Reckoning is a board game score tracking web application. It works with any board game that needs score tracking. It's a React + Vite application with two themes (Atom Punk terminal and Nebula space), designed for mobile-first touch interactions with swipe gestures to adjust scores.
 
 ## Development Commands
 
@@ -84,7 +84,7 @@ The core interaction is swipe-to-score implemented in `src/hooks/useSwipe.js`:
 
 Uses Tailwind CSS with extensive custom properties:
 
-- **Pip-Boy theme**: Green terminal aesthetic with CSS variables in `src/index.css` (`--pip-green`, `--pip-bg`, etc.)
+- **Theming**: CSS variables in `src/index.css` (`--theme-primary`, `--theme-bg`, etc.) with `dr-` prefixed utility classes
 - **CRT effects**: Scanline overlay and vignette applied via body pseudo-elements
 - **Custom colors**: 8 player colors defined in `tailwind.config.js` and `src/utils/colors.js`
 - **Responsive fonts**: `score-text` class uses clamp() for viewport-based sizing
@@ -111,3 +111,71 @@ localStorage is the single source of truth:
 - **History limit**: 100 entries max
 - **No backend**: Everything is client-side with localStorage
 - **Mobile-first**: Primary interaction is touch swipe, mouse is secondary
+
+## Testing
+
+### Unit Tests (Vitest)
+
+Unit tests use Vitest with React Testing Library. Run with:
+
+```bash
+npm test           # Watch mode
+npm run test:run   # Single run
+npm run test:coverage  # With coverage
+```
+
+### End-to-End Tests (Playwright)
+
+E2E tests are located in `tests/` and use Playwright to test the full application in real browsers.
+
+**Configuration:** `playwright.config.ts`
+- Test directory: `./tests`
+- Browsers: Chromium, Firefox, WebKit
+- Parallel execution enabled
+- HTML reporter for test results
+- Traces collected on first retry
+
+**Running E2E Tests:**
+
+```bash
+# Start dev server first (in separate terminal)
+npm run dev
+
+# Run all tests
+npx playwright test
+
+# Run in headed mode (visible browser)
+npx playwright test --headed
+
+# Run specific test file
+npx playwright test tests/score-tap-adjustment.spec.ts
+
+# Run for specific browser
+npx playwright test --project=chromium
+
+# View HTML report
+npx playwright show-report
+```
+
+**Test Files:**
+- `tests/score-tap-adjustment.spec.ts` - Tests tap-to-adjust score functionality
+
+**Writing E2E Tests:**
+
+Tests should:
+1. Navigate to `http://localhost:5173`
+2. Use Settings to create players before testing interactions
+3. Account for the 2-second score debounce (`COMMIT_DEBOUNCE_MS`) when verifying score changes
+4. Use appropriate timeouts for assertions (3000ms recommended for score changes)
+
+**Key Selectors:**
+- Settings button: `getByLabel('Settings')`
+- Close settings: `getByLabel('Close settings')`
+- Add player input: `getByPlaceholder('Player name...')`
+- Add button: `getByRole('button', { name: 'Add' })`
+- Score display: `.score-text` class within player cell
+
+**Tap Detection:**
+- Taps in top half of player cell increase score
+- Taps in bottom half decrease score
+- Movement < 5px in both directions qualifies as a tap
