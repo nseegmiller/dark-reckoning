@@ -1,5 +1,10 @@
 # Change History
 
+## v0.14
+
+**Features**
+- Update app description to reflect multiple themes and swipe gestures
+
 ## v0.13
 
 **Features**
