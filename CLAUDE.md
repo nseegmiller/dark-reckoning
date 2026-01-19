@@ -33,12 +33,14 @@ The app version is managed in `src/version.js` with separate `VERSION_MAJOR` and
 2. Update version in `src/version.js` (increment MINOR by 1)
 3. Generate commit message and add it to `CHANGELOG.md`:
    - Add new version section at the top (e.g., `## v0.8`)
-   - ONLY include sections: **Features:** and/or **Bug Fixes:**
-   - NEVER include **Code Quality:** in CHANGELOG.md (that's only for commit messages)
+   - ONLY include sections: **Features** and/or **Bug Fixes**
+   - NEVER include **Code Quality** in CHANGELOG.md (that's only for commit messages)
+   - Do NOT use colons after section headers (use `**Features**` not `**Features:**`)
    - Only include a section if it has content (skip empty sections)
    - List changes as bullet points (`- Change description`)
 4. Create the git commit with updated version and changelog included
    - Commit message can include all three sections: Features, Bug Fixes, Code Quality
+   - Do NOT use colons after section headers in commit messages either
    - Use the version number as the first line (e.g., "v0.8: Brief summary")
    - Only include sections that have content
 
@@ -134,21 +136,19 @@ E2E tests are located in `tests/` and use Playwright to test the full applicatio
 - Parallel execution enabled
 - HTML reporter for test results
 - Traces collected on first retry
+- Auto-starts dev server via `webServer` config
 
 **Running E2E Tests:**
 
 ```bash
-# Start dev server first (in separate terminal)
-npm run dev
-
-# Run all tests
+# Run all tests (dev server starts automatically)
 npx playwright test
 
 # Run in headed mode (visible browser)
 npx playwright test --headed
 
 # Run specific test file
-npx playwright test tests/score-tap-adjustment.spec.ts
+npx playwright test tests/score-tap.spec.ts
 
 # Run for specific browser
 npx playwright test --project=chromium
@@ -158,24 +158,46 @@ npx playwright show-report
 ```
 
 **Test Files:**
-- `tests/score-tap-adjustment.spec.ts` - Tests tap-to-adjust score functionality
+- `tests/helpers/test-utils.ts` - Shared test utilities (addPlayer, performTap, performDrag, etc.)
+- `tests/score-tap.spec.ts` - Tap interaction tests across all rotations
+- `tests/score-drag.spec.ts` - Drag/swipe interaction tests across all rotations
+- `tests/player-scaling.spec.ts` - Tests interactions work correctly with 1-8 players
+
+**Test Coverage:**
+- Basic tap/drag at 0° rotation
+- Tap/drag at all rotations (0°, 90°, 180°, 270°)
+- Debounce behavior (accumulation, mixed directions, timer reset)
+- Player scaling (1-8 players)
+- ~58 tests per browser, 174 total across Chromium/Firefox/WebKit
 
 **Writing E2E Tests:**
 
 Tests should:
-1. Navigate to `http://localhost:5173`
-2. Use Settings to create players before testing interactions
-3. Account for the 2-second score debounce (`COMMIT_DEBOUNCE_MS`) when verifying score changes
-4. Use appropriate timeouts for assertions (3000ms recommended for score changes)
+1. Use utilities from `tests/helpers/test-utils.ts` for common operations
+2. Account for the 2-second score debounce (`COMMIT_DEBOUNCE_MS`) when verifying score changes
+3. Use `clearGameState(page)` in beforeEach to ensure clean state
+4. Use short player names (≤10 chars) to avoid truncation issues
 
 **Key Selectors:**
+- Player cell: `.cursor-ns-resize` class with player name filter
 - Settings button: `getByLabel('Settings')`
 - Close settings: `getByLabel('Close settings')`
 - Add player input: `getByPlaceholder('Player name...')`
 - Add button: `getByRole('button', { name: 'Add' })`
 - Score display: `.score-text` class within player cell
 
-**Tap Detection:**
-- Taps in top half of player cell increase score
-- Taps in bottom half decrease score
-- Movement < 5px in both directions qualifies as a tap
+**Tap Detection (rotation-aware):**
+| Rotation | +1 Area | -1 Area |
+|----------|---------|---------|
+| 0° | Top ~70% | Bottom ~30% |
+| 90° | Right ~70% | Left ~30% |
+| 180° | Bottom ~70% | Top ~30% |
+| 270° | Left ~70% | Right ~30% |
+
+**Drag Direction (rotation-aware):**
+| Rotation | Increase Score | Decrease Score |
+|----------|----------------|----------------|
+| 0° | Drag UP | Drag DOWN |
+| 90° | Drag RIGHT | Drag LEFT |
+| 180° | Drag DOWN | Drag UP |
+| 270° | Drag LEFT | Drag RIGHT |
