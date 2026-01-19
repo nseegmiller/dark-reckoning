@@ -57,6 +57,20 @@
   --theme-animation-duration: 8s;
 }
 
+/* Clear Theme (High visibility, clean readability) */
+.theme-clear {
+  --theme-primary: #ffffff;
+  --theme-primary-dim: #a0a0a0;
+  --theme-glow: transparent;
+  --theme-bg: #1a1a1a;
+  --theme-bg-light: #252525;
+  --theme-border: #404040;
+  --theme-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --theme-border-radius: 4px;
+  --theme-transition: 150ms;
+  --theme-animation-duration: 0s;
+}
+
 /* Animations */
 @keyframes flicker {
   0%, 100% { opacity: 1; }
@@ -153,6 +167,12 @@
     pointer-events: none;
     z-index: 1;
   }
+
+  /* Clear theme - no overlay effects */
+  .theme-clear body::before,
+  .theme-clear body::after {
+    display: none;
+  }
 }
 
 @layer components {
@@ -222,6 +242,17 @@
     box-shadow: 0 0 25px var(--theme-glow), 0 0 40px var(--theme-accent-glow);
   }
 
+  /* Clear theme button - clean, no glow */
+  .theme-clear .dr-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--theme-primary);
+  }
+
+  .theme-clear .dr-btn-active {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: var(--theme-primary);
+  }
+
   .dr-panel {
     background: var(--theme-bg-light);
     border: 1px solid var(--theme-primary-dim);
@@ -270,6 +301,22 @@
   .theme-nebula .player-name {
     font-weight: 700;
     letter-spacing: 0.2em;
+  }
+
+  /* Clear theme text - no glow, clean edges */
+  /* Use !important to override inline styles in PlayerCell */
+  .theme-clear .dr-text,
+  .theme-clear .score-text,
+  .theme-clear .player-name {
+    text-shadow: none !important;
+  }
+
+  .theme-clear .score-text {
+    font-weight: 600;
+  }
+
+  .theme-clear .player-name {
+    letter-spacing: 0.1em;
   }
 
   /* Grid spacing - Nebula has more breathing room */

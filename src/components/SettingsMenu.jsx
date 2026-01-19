@@ -168,7 +168,7 @@ export function SettingsMenu({ onClose }) {
               <label className="block text-sm uppercase tracking-wider dr-text-dim mb-2">
                 Theme
               </label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <button
                   onClick={() => dispatch({ type: ACTIONS.SET_THEME, payload: 'atompunk' })}
                   className={`dr-btn py-3 ${state.theme === 'atompunk' ? 'dr-btn-active' : ''}`}
@@ -185,6 +185,15 @@ export function SettingsMenu({ onClose }) {
                   <div className="text-center">
                     <div className="text-sm mb-1">Nebula</div>
                     <div className="text-xs dr-text-dim">Space</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => dispatch({ type: ACTIONS.SET_THEME, payload: 'clear' })}
+                  className={`dr-btn py-3 ${state.theme === 'clear' ? 'dr-btn-active' : ''}`}
+                >
+                  <div className="text-center">
+                    <div className="text-sm mb-1">Clear</div>
+                    <div className="text-xs dr-text-dim">Readable</div>
                   </div>
                 </button>
               </div>

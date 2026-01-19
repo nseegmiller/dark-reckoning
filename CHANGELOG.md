@@ -1,5 +1,15 @@
 # Change History
 
+## v0.13
+
+**Features**
+- Add "Clear" high-visibility theme with clean typography and no glow effects
+- Uses system font stack for optimal readability across platforms
+- Add E2E tests for theme switching, persistence, and visual characteristics
+
+**Bug Fixes**
+- Fix theme validation to properly persist Clear theme after page reload
+
 ## v0.12
 
 **Features**

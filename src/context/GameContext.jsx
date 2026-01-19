@@ -55,8 +55,9 @@ function validateLoadedState(payload) {
     return null
   }
 
-  // Migrate old theme values to new ones
-  const theme = payload.theme === 'nebula' ? 'nebula' : 'atompunk'
+  // Validate theme - must be one of the valid themes
+  const validThemes = ['atompunk', 'nebula', 'clear']
+  const theme = validThemes.includes(payload.theme) ? payload.theme : 'atompunk'
 
   const validatedState = {
     theme,
@@ -97,7 +98,7 @@ function gameReducer(state, action) {
     }
 
     case ACTIONS.SET_THEME: {
-      const validThemes = ['atompunk', 'nebula']
+      const validThemes = ['atompunk', 'nebula', 'clear']
       const newTheme = validThemes.includes(action.payload) ? action.payload : state.theme
       return { ...state, theme: newTheme }
     }
@@ -263,7 +264,7 @@ export function GameProvider({ children }) {
   // Apply theme class to document
   useEffect(() => {
     // Remove all theme classes
-    document.documentElement.classList.remove('theme-atompunk', 'theme-nebula')
+    document.documentElement.classList.remove('theme-atompunk', 'theme-nebula', 'theme-clear')
     // Add current theme class
     document.documentElement.classList.add(`theme-${state.theme}`)
   }, [state.theme])
