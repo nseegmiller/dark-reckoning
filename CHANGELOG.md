@@ -1,5 +1,11 @@
 # Change History
 
+## v0.16
+
+**Features**
+- Auto-close settings menu after confirming New Game score reset
+- Shorten "Atom Punk" to "Atom" on theme button to prevent text wrapping on mobile
+
 ## v0.15
 
 **Features**

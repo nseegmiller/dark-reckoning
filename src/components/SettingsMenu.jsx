@@ -31,6 +31,7 @@ export function SettingsMenu({ onClose }) {
         onConfirm: () => {
           dispatch({ type: ACTIONS.NEW_GAME })
           setConfirmDialog(null)
+          onClose()
         },
       })
     })
@@ -172,7 +173,7 @@ export function SettingsMenu({ onClose }) {
                   className={`dr-btn py-3 ${state.theme === 'atompunk' ? 'dr-btn-active' : ''}`}
                 >
                   <div className="text-center">
-                    <div className="text-sm mb-1">Atom Punk</div>
+                    <div className="text-sm mb-1">Atom</div>
                     <div className="text-xs dr-text-dim">Terminal</div>
                   </div>
                 </button>

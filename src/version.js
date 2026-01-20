@@ -3,6 +3,6 @@
 // Update MAJOR only when explicitly requested
 
 export const VERSION_MAJOR = 0
-export const VERSION_MINOR = 15
+export const VERSION_MINOR = 16
 
 export const VERSION = `v${VERSION_MAJOR}.${VERSION_MINOR}`
