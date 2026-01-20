@@ -1,8 +1,14 @@
 import { createContext, useContext, useReducer, useEffect, useState, useRef } from 'react'
+import PropTypes from 'prop-types'
 import { getNextAvailableColor } from '../utils/colors'
-
-const STORAGE_KEY = 'darkReckoning'
-const SAVE_DEBOUNCE_MS = 500
+import {
+  STORAGE_KEY,
+  SAVE_DEBOUNCE_MS,
+  MAX_PLAYERS,
+  MAX_HISTORY_ENTRIES,
+  VALID_THEMES,
+  DEFAULT_THEME,
+} from '../constants'
 
 // Action type constants
 export const ACTIONS = {
@@ -19,7 +25,7 @@ export const ACTIONS = {
 }
 
 const initialState = {
-  theme: 'atompunk',
+  theme: DEFAULT_THEME,
   players: [],
   history: [],
 }
@@ -56,8 +62,7 @@ function validateLoadedState(payload) {
   }
 
   // Validate theme - must be one of the valid themes
-  const validThemes = ['atompunk', 'nebula', 'clear']
-  const theme = validThemes.includes(payload.theme) ? payload.theme : 'atompunk'
+  const theme = VALID_THEMES.includes(payload.theme) ? payload.theme : DEFAULT_THEME
 
   const validatedState = {
     theme,
@@ -80,7 +85,7 @@ function validateLoadedState(payload) {
   if (Array.isArray(payload.history)) {
     validatedState.history = payload.history
       .filter(validateHistoryEntry)
-      .slice(0, 100)
+      .slice(0, MAX_HISTORY_ENTRIES)
   }
 
   return validatedState
@@ -98,13 +103,12 @@ function gameReducer(state, action) {
     }
 
     case ACTIONS.SET_THEME: {
-      const validThemes = ['atompunk', 'nebula', 'clear']
-      const newTheme = validThemes.includes(action.payload) ? action.payload : state.theme
+      const newTheme = VALID_THEMES.includes(action.payload) ? action.payload : state.theme
       return { ...state, theme: newTheme }
     }
 
     case ACTIONS.ADD_PLAYER: {
-      if (state.players.length >= 8) return state
+      if (state.players.length >= MAX_PLAYERS) return state
       const usedColors = state.players.map(p => p.color)
       const color = getNextAvailableColor(usedColors)
       const newPlayer = {
@@ -161,7 +165,7 @@ function gameReducer(state, action) {
         players: state.players.map(p =>
           p.id === playerId ? { ...p, score: p.score + change } : p
         ),
-        history: [historyEntry, ...state.history].slice(0, 100),
+        history: [historyEntry, ...state.history].slice(0, MAX_HISTORY_ENTRIES),
       }
     }
 
@@ -264,7 +268,9 @@ export function GameProvider({ children }) {
   // Apply theme class to document
   useEffect(() => {
     // Remove all theme classes
-    document.documentElement.classList.remove('theme-atompunk', 'theme-nebula', 'theme-clear')
+    VALID_THEMES.forEach(theme => {
+      document.documentElement.classList.remove(`theme-${theme}`)
+    })
     // Add current theme class
     document.documentElement.classList.add(`theme-${state.theme}`)
   }, [state.theme])
@@ -274,6 +280,10 @@ export function GameProvider({ children }) {
       {children}
     </GameContext.Provider>
   )
+}
+
+GameProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 }
 
 export function useGame() {

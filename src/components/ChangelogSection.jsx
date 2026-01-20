@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types'
+
 /**
  * Reusable component for displaying a changelog section
  */
@@ -21,4 +23,9 @@ export function ChangelogSection({ title, items }) {
       </ul>
     </div>
   )
+}
+
+ChangelogSection.propTypes = {
+  title: PropTypes.string.isRequired,
+  items: PropTypes.arrayOf(PropTypes.string),
 }

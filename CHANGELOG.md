@@ -1,5 +1,23 @@
 # Change History
 
+## v0.15
+
+**Features**
+- Centralize all constants in src/constants.js for better maintainability
+- Add useScoreAccumulator hook to manage debounced score changes
+- Add useDialog hook for consistent dialog state management
+- Add CSS variables for feedback colors (positive/negative)
+- Add overlay CSS classes (dr-overlay, dr-overlay-heavy) for dialogs
+- Add PropTypes to all components for runtime type checking
+- Add aria-live attribute to score displays for accessibility
+- Extract tap detection logic in useSwipe to eliminate code duplication
+- Add flushAndExecute utility for consistent flush-before-action pattern
+- Document custom event system and constants with JSDoc comments
+
+**Bug Fixes**
+- Fix Clear theme scanline overlay by using content: none instead of display: none
+- Make theme visual tests more robust to handle browser rendering artifacts
+
 ## v0.14
 
 **Features**

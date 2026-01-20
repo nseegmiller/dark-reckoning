@@ -1,58 +1,27 @@
-import { useState, useCallback, useRef, memo, useEffect, useLayoutEffect } from 'react'
+import { useState, useCallback, memo, useLayoutEffect, useRef } from 'react'
+import PropTypes from 'prop-types'
 import { useGame, ACTIONS } from '../context/GameContext'
 import { useSwipe } from '../hooks/useSwipe'
-
-const COMMIT_DEBOUNCE_MS = 2000
+import { useScoreAccumulator } from '../hooks/useScoreAccumulator'
 
 export const PlayerCell = memo(function PlayerCell({ player }) {
-  const { state, dispatch } = useGame()
+  const { dispatch } = useGame()
   const [previewChange, setPreviewChange] = useState(null)
-  const [hasPendingChanges, setHasPendingChanges] = useState(false)
 
-  // Dual state tracking for accumulated changes:
-  // - accumulatedChange (state): Triggers UI re-renders to show pending changes
-  // - accumulatedChangeRef (ref): Used in callbacks/unmount without causing re-renders
-  // Both are needed to ensure correct values in all contexts (render vs callbacks)
-  const [accumulatedChange, setAccumulatedChange] = useState(0)
-  const accumulatedChangeRef = useRef(0)
-
-  const commitTimerRef = useRef(null)
+  // Use the score accumulator hook for debounced score changes
+  const { accumulatedChange, hasPendingChanges, add, commit } = useScoreAccumulator(
+    player.id,
+    dispatch
+  )
 
   // Track rotation for smooth transitions (avoid backwards animation on normalization)
   const prevRotationRef = useRef(player.rotation || 0)
   const [visualRotation, setVisualRotation] = useState(player.rotation || 0)
   const [skipTransition, setSkipTransition] = useState(false)
 
-  const commitChanges = useCallback(() => {
-    if (accumulatedChangeRef.current !== 0) {
-      dispatch({ type: ACTIONS.ADJUST_SCORE, payload: { playerId: player.id, change: accumulatedChangeRef.current } })
-      accumulatedChangeRef.current = 0
-      setAccumulatedChange(0)
-      setHasPendingChanges(false)
-    }
-    if (commitTimerRef.current) {
-      clearTimeout(commitTimerRef.current)
-      commitTimerRef.current = null
-    }
-  }, [dispatch, player.id])
-
   const handleScoreChange = useCallback((change) => {
-    // Accumulate the change instead of dispatching immediately
-    const newValue = accumulatedChangeRef.current + change
-    accumulatedChangeRef.current = newValue
-    setAccumulatedChange(newValue)
-    setHasPendingChanges(true)
-
-    // Clear existing timer
-    if (commitTimerRef.current) {
-      clearTimeout(commitTimerRef.current)
-    }
-
-    // Start new debounce timer
-    commitTimerRef.current = setTimeout(() => {
-      commitChanges()
-    }, COMMIT_DEBOUNCE_MS)
-  }, [commitChanges])
+    add(change)
+  }, [add])
 
   const handlePreview = useCallback((change) => {
     setPreviewChange(change)
@@ -60,9 +29,9 @@ export const PlayerCell = memo(function PlayerCell({ player }) {
 
   const handleRotate = useCallback(() => {
     // Commit pending changes before rotating
-    commitChanges()
+    commit()
     dispatch({ type: ACTIONS.ROTATE_PLAYER, payload: player.id })
-  }, [commitChanges, dispatch, player.id])
+  }, [commit, dispatch, player.id])
 
   const swipeHandlers = useSwipe({
     rotation: player.rotation || 0,
@@ -77,34 +46,11 @@ export const PlayerCell = memo(function PlayerCell({ player }) {
   const totalDelta = accumulatedChange + (previewChange || 0)
   const showDelta = (isPreviewActive || hasPendingChanges) && totalDelta !== 0
   const shouldHighlight = isPreviewActive || (hasPendingChanges && accumulatedChange !== 0)
+  const isPositive = totalDelta > 0
   const highlightColor = shouldHighlight
-    ? (totalDelta > 0 ? '#4ade80' : '#f87171')
+    ? (isPositive ? 'var(--color-positive)' : 'var(--color-negative)')
     : player.color
   const rotation = player.rotation || 0
-
-  // Commit changes on unmount
-  useEffect(() => {
-    return () => {
-      if (accumulatedChangeRef.current !== 0) {
-        dispatch({ type: ACTIONS.ADJUST_SCORE, payload: { playerId: player.id, change: accumulatedChangeRef.current } })
-      }
-      if (commitTimerRef.current) {
-        clearTimeout(commitTimerRef.current)
-      }
-    }
-  }, [dispatch, player.id])
-
-  // Listen for flush events (before undo, settings open, etc.)
-  useEffect(() => {
-    const handleFlush = () => {
-      commitChanges()
-    }
-
-    window.addEventListener('flushPendingScores', handleFlush)
-    return () => {
-      window.removeEventListener('flushPendingScores', handleFlush)
-    }
-  }, [commitChanges])
 
   // Detect rotation normalization (value decreased) and handle smoothly
   useLayoutEffect(() => {
@@ -177,17 +123,19 @@ export const PlayerCell = memo(function PlayerCell({ player }) {
           {player.name}
         </div>
 
-        {/* Score */}
+        {/* Score with aria-live for accessibility */}
         <div
           className="score-text transition-all duration-75"
           style={{
             color: highlightColor,
             textShadow: `0 0 20px ${shouldHighlight
-              ? (totalDelta > 0 ? 'rgba(74, 222, 128, 0.5)' : 'rgba(248, 113, 113, 0.5)')
+              ? (isPositive ? 'var(--color-positive-glow)' : 'var(--color-negative-glow)')
               : player.color}80, 0 0 40px ${shouldHighlight
-              ? (totalDelta > 0 ? 'rgba(74, 222, 128, 0.3)' : 'rgba(248, 113, 113, 0.3)')
+              ? (isPositive ? 'var(--color-positive-glow-dim)' : 'var(--color-negative-glow-dim)')
               : player.color}40`
           }}
+          aria-live="polite"
+          aria-atomic="true"
         >
           {displayScore}
         </div>
@@ -195,8 +143,8 @@ export const PlayerCell = memo(function PlayerCell({ player }) {
         {/* Delta indicator */}
         <div className="h-6 flex items-center justify-center">
           {showDelta && (
-            <span className={`text-lg ${totalDelta > 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {totalDelta > 0 ? '+' : ''}{totalDelta}
+            <span className={`text-lg ${isPositive ? 'text-positive' : 'text-negative'}`}>
+              {isPositive ? '+' : ''}{totalDelta}
             </span>
           )}
         </div>
@@ -204,3 +152,13 @@ export const PlayerCell = memo(function PlayerCell({ player }) {
     </div>
   )
 })
+
+PlayerCell.propTypes = {
+  player: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    color: PropTypes.string.isRequired,
+    score: PropTypes.number.isRequired,
+    rotation: PropTypes.number,
+  }).isRequired,
+}

@@ -1,30 +1,28 @@
-import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { useGame, ACTIONS } from '../context/GameContext'
+import { useDialog } from '../hooks/useDialog'
 import { History } from './History'
 import { ChangeHistory } from './ChangeHistory'
 import { VERSION } from '../version'
-import { FLUSH_DELAY_MS } from '../constants'
+import { flushAndExecute } from '../constants'
 
 export function Header({ onSettingsClick }) {
   const { state, dispatch } = useGame()
-  const [showHistory, setShowHistory] = useState(false)
-  const [showChangeHistory, setShowChangeHistory] = useState(false)
+  const historyDialog = useDialog()
+  const changeHistoryDialog = useDialog()
 
   const handleUndo = () => {
     // Flush any pending score changes before undo
-    window.dispatchEvent(new CustomEvent('flushPendingScores'))
-    // Small delay to ensure flush completes
-    setTimeout(() => {
+    flushAndExecute(() => {
       dispatch({ type: ACTIONS.UNDO })
-    }, FLUSH_DELAY_MS)
+    })
   }
 
   const handleShowHistory = () => {
     // Flush any pending score changes before opening history
-    window.dispatchEvent(new CustomEvent('flushPendingScores'))
-    setTimeout(() => {
-      setShowHistory(true)
-    }, FLUSH_DELAY_MS)
+    flushAndExecute(() => {
+      historyDialog.open()
+    })
   }
 
   return (
@@ -36,11 +34,11 @@ export function Header({ onSettingsClick }) {
             <span className="hidden sm:inline">Dark Reckoning</span>
           </h1>
           <span
-            onClick={() => setShowChangeHistory(true)}
+            onClick={changeHistoryDialog.open}
             className="text-xs dr-text-dim cursor-pointer hover:dr-text transition-colors"
             role="button"
             tabIndex={0}
-            onKeyDown={(e) => e.key === 'Enter' && setShowChangeHistory(true)}
+            onKeyDown={(e) => e.key === 'Enter' && changeHistoryDialog.open()}
             aria-label="View change history"
           >
             {VERSION}
@@ -88,10 +86,14 @@ export function Header({ onSettingsClick }) {
       </header>
 
       {/* History popup */}
-      {showHistory && <History onClose={() => setShowHistory(false)} />}
+      {historyDialog.isOpen && <History onClose={historyDialog.close} />}
 
       {/* Change History popup */}
-      {showChangeHistory && <ChangeHistory onClose={() => setShowChangeHistory(false)} />}
+      {changeHistoryDialog.isOpen && <ChangeHistory onClose={changeHistoryDialog.close} />}
     </>
   )
+}
+
+Header.propTypes = {
+  onSettingsClick: PropTypes.func.isRequired,
 }

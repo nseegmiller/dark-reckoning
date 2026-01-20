@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import PropTypes from 'prop-types'
 import { parseChangelog } from '../utils/changelog'
 import { ChangelogSection } from './ChangelogSection'
 import changelogRaw from '../../CHANGELOG.md?raw'
@@ -17,8 +18,7 @@ export function ChangeHistory({ onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: 'rgba(0,0,0,0.9)' }}
+      className="dr-overlay"
       role="dialog"
       aria-modal="true"
       aria-labelledby="changelog-title"
@@ -42,7 +42,7 @@ export function ChangeHistory({ onClose }) {
         <div className="flex-1 overflow-y-auto p-3 sm:p-4">
           {error ? (
             <div className="text-center dr-text-dim py-8">
-              <p className="text-red-400 mb-2">Failed to load change history</p>
+              <p className="text-negative mb-2">Failed to load change history</p>
               <p className="text-xs">{error}</p>
             </div>
           ) : versions.length === 0 ? (
@@ -68,4 +68,8 @@ export function ChangeHistory({ onClose }) {
       </div>
     </div>
   )
+}
+
+ChangeHistory.propTypes = {
+  onClose: PropTypes.func.isRequired,
 }

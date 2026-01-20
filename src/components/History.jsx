@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import PropTypes from 'prop-types'
 import { useGame } from '../context/GameContext'
 
 export function History({ onClose }) {
@@ -51,8 +52,7 @@ export function History({ onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: 'rgba(0,0,0,0.9)' }}
+      className="dr-overlay"
       role="dialog"
       aria-modal="true"
       aria-labelledby="history-title"
@@ -111,11 +111,7 @@ export function History({ onClose }) {
                             >
                               {/* Delta */}
                               <div
-                                className="text-center text-sm font-bold mb-1"
-                                style={{
-                                  color: entry.change > 0 ? '#4ade80' : '#f87171',
-                                  textShadow: entry.change > 0 ? '0 0 8px rgba(74, 222, 128, 0.6)' : '0 0 8px rgba(248, 113, 113, 0.6)'
-                                }}
+                                className={`text-center text-sm font-bold mb-1 ${entry.change > 0 ? 'text-positive glow-positive' : 'text-negative glow-negative'}`}
                               >
                                 {entry.change > 0 ? '+' : ''}{entry.change}
                               </div>
@@ -144,4 +140,8 @@ export function History({ onClose }) {
       </div>
     </div>
   )
+}
+
+History.propTypes = {
+  onClose: PropTypes.func.isRequired,
 }

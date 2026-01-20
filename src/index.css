@@ -18,6 +18,18 @@
   --theme-transition: 100ms;
   --theme-animation-duration: 8s;
 
+  /* Feedback colors (consistent across all themes) */
+  --color-positive: #4ade80;
+  --color-negative: #f87171;
+  --color-positive-glow: rgba(74, 222, 128, 0.5);
+  --color-negative-glow: rgba(248, 113, 113, 0.5);
+  --color-positive-glow-dim: rgba(74, 222, 128, 0.3);
+  --color-negative-glow-dim: rgba(248, 113, 113, 0.3);
+
+  /* Overlay colors */
+  --overlay-bg: rgba(0, 0, 0, 0.9);
+  --overlay-bg-heavy: rgba(0, 0, 0, 0.95);
+
   /* Legacy variable names for backward compatibility */
   --dr-green: var(--theme-primary);
   --dr-green-dim: var(--theme-primary-dim);
@@ -168,9 +180,10 @@
     z-index: 1;
   }
 
-  /* Clear theme - no overlay effects */
+  /* Clear theme - completely remove overlay effects */
   .theme-clear body::before,
   .theme-clear body::after {
+    content: none;
     display: none;
   }
 }
@@ -382,5 +395,35 @@
 
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background-color: var(--theme-primary);
+  }
+
+  /* Overlay backdrop for dialogs and modals */
+  .dr-overlay {
+    @apply fixed inset-0 flex items-center justify-center p-4;
+    background-color: var(--overlay-bg);
+    z-index: 50;
+  }
+
+  .dr-overlay-heavy {
+    @apply fixed inset-0 flex items-center justify-center p-4;
+    background-color: var(--overlay-bg-heavy);
+    z-index: 100;
+  }
+
+  /* Score feedback text colors */
+  .text-positive {
+    color: var(--color-positive);
+  }
+
+  .text-negative {
+    color: var(--color-negative);
+  }
+
+  .glow-positive {
+    text-shadow: 0 0 8px var(--color-positive-glow);
+  }
+
+  .glow-negative {
+    text-shadow: 0 0 8px var(--color-negative-glow);
   }
 }

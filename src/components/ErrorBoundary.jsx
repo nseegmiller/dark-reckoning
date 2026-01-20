@@ -1,4 +1,6 @@
 import { Component } from 'react'
+import PropTypes from 'prop-types'
+import { STORAGE_KEY } from '../constants'
 
 export class ErrorBoundary extends Component {
   constructor(props) {
@@ -19,7 +21,7 @@ export class ErrorBoundary extends Component {
   }
 
   handleClearAndReload = () => {
-    localStorage.removeItem('darkReckoning')
+    localStorage.removeItem(STORAGE_KEY)
     window.location.reload()
   }
 
@@ -50,8 +52,7 @@ export class ErrorBoundary extends Component {
               </button>
               <button
                 onClick={this.handleClearAndReload}
-                className="dr-btn w-full"
-                style={{ borderColor: '#ef4444', color: '#ef4444' }}
+                className="dr-btn w-full text-negative border-red-400"
                 aria-label="Clear all data and reload the application"
               >
                 Clear Data & Reload
@@ -64,4 +65,8 @@ export class ErrorBoundary extends Component {
 
     return this.props.children
   }
+}
+
+ErrorBoundary.propTypes = {
+  children: PropTypes.node.isRequired,
 }

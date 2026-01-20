@@ -1,10 +1,15 @@
 import { Page, Locator, expect } from '@playwright/test';
 
-// Constants matching the application code
-export const COMMIT_DEBOUNCE_MS = 2000;
-export const SCORE_TIMEOUT = 3000;
-export const PIXELS_PER_UNIT = 30;
-export const SWIPE_THRESHOLD = 20;
+// =============================================================================
+// Constants matching the application code (from src/constants.js)
+// IMPORTANT: Keep these in sync with the source of truth in src/constants.js
+// =============================================================================
+export const COMMIT_DEBOUNCE_MS = 2000;        // COMMIT_DEBOUNCE_MS in src/constants.js
+export const SCORE_TIMEOUT = 3000;              // Test timeout (slightly longer than debounce)
+export const PIXELS_PER_UNIT = 30;              // PIXELS_PER_SCORE_UNIT in src/constants.js
+export const SWIPE_THRESHOLD = 20;              // SWIPE_THRESHOLD_PX in src/constants.js
+export const TAP_THRESHOLD = 5;                 // TAP_THRESHOLD_PX in src/constants.js
+export const STORAGE_KEY = 'darkReckoning';     // STORAGE_KEY in src/constants.js
 
 // Rotation values
 export type Rotation = 0 | 90 | 180 | 270;
@@ -248,9 +253,9 @@ export async function waitForScoreCommit(page: Page): Promise<void> {
  * Clear localStorage to reset game state
  */
 export async function clearGameState(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    localStorage.removeItem('darkReckoning');
-  });
+  await page.evaluate((key) => {
+    localStorage.removeItem(key);
+  }, STORAGE_KEY);
 }
 
 /**

@@ -1,8 +1,9 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { useGame, ACTIONS } from '../context/GameContext'
 import { PLAYER_COLORS } from '../utils/colors'
 import { ConfirmDialog } from './ConfirmDialog'
-import { FLUSH_DELAY_MS } from '../constants'
+import { MAX_PLAYERS, MAX_PLAYER_NAME_LENGTH, flushAndExecute } from '../constants'
 
 export function SettingsMenu({ onClose }) {
   const { state, dispatch } = useGame()
@@ -11,7 +12,7 @@ export function SettingsMenu({ onClose }) {
   const [confirmDialog, setConfirmDialog] = useState(null)
 
   const handleAddPlayer = () => {
-    if (state.players.length >= 8) return
+    if (state.players.length >= MAX_PLAYERS) return
     dispatch({ type: ACTIONS.ADD_PLAYER, payload: newPlayerName.trim() })
     setNewPlayerName('')
   }
@@ -22,8 +23,7 @@ export function SettingsMenu({ onClose }) {
 
   const handleNewGame = () => {
     // Flush any pending score changes before new game
-    window.dispatchEvent(new CustomEvent('flushPendingScores'))
-    setTimeout(() => {
+    flushAndExecute(() => {
       setConfirmDialog({
         title: 'New Game',
         message: 'Reset all scores to 0? Players will be kept.',
@@ -33,13 +33,12 @@ export function SettingsMenu({ onClose }) {
           setConfirmDialog(null)
         },
       })
-    }, FLUSH_DELAY_MS)
+    })
   }
 
   const handleClearAll = () => {
     // Flush any pending score changes before clearing all
-    window.dispatchEvent(new CustomEvent('flushPendingScores'))
-    setTimeout(() => {
+    flushAndExecute(() => {
       setConfirmDialog({
         title: 'Clear All',
         message: 'Remove all players and start fresh?',
@@ -50,7 +49,7 @@ export function SettingsMenu({ onClose }) {
           setConfirmDialog(null)
         },
       })
-    }, FLUSH_DELAY_MS)
+    })
   }
 
   const handleColorChange = (playerId, color) => {
@@ -65,8 +64,7 @@ export function SettingsMenu({ onClose }) {
   return (
     <>
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        style={{ backgroundColor: 'rgba(0,0,0,0.9)' }}
+        className="dr-overlay"
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-title"
@@ -82,7 +80,7 @@ export function SettingsMenu({ onClose }) {
             {/* Players */}
             <div>
               <label className="block text-sm uppercase tracking-wider dr-text-dim mb-2">
-                Players ({state.players.length}/8)
+                Players ({state.players.length}/{MAX_PLAYERS})
               </label>
 
               {/* Player list */}
@@ -125,7 +123,7 @@ export function SettingsMenu({ onClose }) {
                         payload: { id: player.id, updates: { name: e.target.value } }
                       })}
                       className="flex-1 min-w-0 bg-transparent border-none outline-none dr-text uppercase tracking-wide"
-                      maxLength={12}
+                      maxLength={MAX_PLAYER_NAME_LENGTH}
                       aria-label={`Name for ${player.name}`}
                     />
 
@@ -145,7 +143,7 @@ export function SettingsMenu({ onClose }) {
               </div>
 
               {/* Add player */}
-              {state.players.length < 8 && (
+              {state.players.length < MAX_PLAYERS && (
                 <div className="flex gap-2 items-stretch">
                   <input
                     type="text"
@@ -154,7 +152,7 @@ export function SettingsMenu({ onClose }) {
                     onKeyDown={(e) => e.key === 'Enter' && handleAddPlayer()}
                     placeholder="Player name..."
                     className="flex-1 min-w-0 px-3 py-2 bg-transparent border dr-border dr-text placeholder:dr-text-dim uppercase tracking-wide outline-none focus:border-[var(--dr-green)]"
-                    maxLength={12}
+                    maxLength={MAX_PLAYER_NAME_LENGTH}
                   />
                   <button onClick={handleAddPlayer} className="dr-btn shrink-0 px-4">
                     Add
@@ -234,4 +232,8 @@ export function SettingsMenu({ onClose }) {
       )}
     </>
   )
+}
+
+SettingsMenu.propTypes = {
+  onClose: PropTypes.func.isRequired,
 }

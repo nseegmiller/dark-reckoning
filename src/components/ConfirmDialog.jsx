@@ -1,8 +1,17 @@
-export function ConfirmDialog({ title, message, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel', danger = false }) {
+import PropTypes from 'prop-types'
+
+export function ConfirmDialog({
+  title,
+  message,
+  onConfirm,
+  onCancel,
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  danger = false
+}) {
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      style={{ backgroundColor: 'rgba(0,0,0,0.95)' }}
+      className="dr-overlay-heavy"
       role="alertdialog"
       aria-modal="true"
       aria-labelledby="confirm-dialog-title"
@@ -30,7 +39,7 @@ export function ConfirmDialog({ title, message, onConfirm, onCancel, confirmText
           </button>
           <button
             onClick={onConfirm}
-            className={`dr-btn flex-1 ${danger ? 'text-red-400 border-red-400/50 hover:border-red-400 hover:shadow-[0_0_10px_rgba(248,113,113,0.3)]' : 'dr-btn-active'}`}
+            className={`dr-btn flex-1 ${danger ? 'text-negative border-red-400/50 hover:border-red-400 hover:shadow-[0_0_10px_var(--color-negative-glow)]' : 'dr-btn-active'}`}
             aria-label={confirmText}
           >
             {confirmText}
@@ -39,4 +48,14 @@ export function ConfirmDialog({ title, message, onConfirm, onCancel, confirmText
       </div>
     </div>
   )
+}
+
+ConfirmDialog.propTypes = {
+  title: PropTypes.string.isRequired,
+  message: PropTypes.string.isRequired,
+  onConfirm: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
+  confirmText: PropTypes.string,
+  cancelText: PropTypes.string,
+  danger: PropTypes.bool,
 }
