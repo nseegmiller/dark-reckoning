@@ -2,6 +2,8 @@
 
 A board game score tracking web application. Built with React + Vite, featuring mobile-first touch interactions with swipe gestures to adjust scores. Works with any board game that needs score tracking.
 
+Use it now at [darkreckoning.com](https://darkreckoning.com/)
+
 ## Features
 
 - **Swipe to Score**: Swipe up/down on player cards to adjust scores
