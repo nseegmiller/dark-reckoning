@@ -1,14 +1,26 @@
 import { useMemo } from 'react'
-import PropTypes from 'prop-types'
 import { useGame } from '../context/GameContext'
+import type { Player, HistoryProps } from '../types'
 
-export function History({ onClose }) {
+interface ProcessedEntry {
+  id: string
+  change: number
+  newScore: number
+  timestamp: number
+}
+
+interface PlayerHistory {
+  player: Player
+  entries: ProcessedEntry[]
+}
+
+export function History({ onClose }: HistoryProps) {
   const { state } = useGame()
 
   // Organize history by player with calculated scores
   const playerHistories = useMemo(() => {
     // Create a map of player histories
-    const histories = {}
+    const histories: Record<string, PlayerHistory> = {}
 
     // Initialize each player's history array
     state.players.forEach(player => {
@@ -20,7 +32,7 @@ export function History({ onClose }) {
 
     // Build history entries with new scores
     // History is stored [newest, ..., oldest], so we work backwards
-    const currentScores = {}
+    const currentScores: Record<string, number> = {}
     state.players.forEach(p => {
       currentScores[p.id] = p.score
     })
@@ -140,8 +152,4 @@ export function History({ onClose }) {
       </div>
     </div>
   )
-}
-
-History.propTypes = {
-  onClose: PropTypes.func.isRequired,
 }

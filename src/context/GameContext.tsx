@@ -1,5 +1,4 @@
 import { createContext, useContext, useReducer, useEffect, useState, useRef } from 'react'
-import PropTypes from 'prop-types'
 import { getNextAvailableColor } from '../utils/colors'
 import {
   STORAGE_KEY,
@@ -9,81 +8,86 @@ import {
   VALID_THEMES,
   DEFAULT_THEME,
 } from '../constants'
+import { ACTIONS } from '../types'
+import type { GameState, GameContextValue, GameAction, Player, HistoryEntry, Theme, GameProviderProps } from '../types'
 
-// Action type constants
-export const ACTIONS = {
-  LOAD_STATE: 'LOAD_STATE',
-  SET_THEME: 'SET_THEME',
-  ADD_PLAYER: 'ADD_PLAYER',
-  REMOVE_PLAYER: 'REMOVE_PLAYER',
-  UPDATE_PLAYER: 'UPDATE_PLAYER',
-  ROTATE_PLAYER: 'ROTATE_PLAYER',
-  ADJUST_SCORE: 'ADJUST_SCORE',
-  UNDO: 'UNDO',
-  NEW_GAME: 'NEW_GAME',
-  CLEAR_ALL: 'CLEAR_ALL',
-}
-
-const initialState = {
+const initialState: GameState = {
   theme: DEFAULT_THEME,
   players: [],
   history: [],
 }
 
-function generateId() {
+function generateId(): string {
   return crypto.randomUUID()
 }
 
-function validatePlayer(player) {
+function validatePlayer(player: unknown): player is Player {
   return (
-    player &&
+    player !== null &&
     typeof player === 'object' &&
-    typeof player.id === 'string' &&
-    typeof player.name === 'string' &&
-    typeof player.color === 'string' &&
-    typeof player.score === 'number'
+    typeof (player as Player).id === 'string' &&
+    typeof (player as Player).name === 'string' &&
+    typeof (player as Player).color === 'string' &&
+    typeof (player as Player).score === 'number'
   )
 }
 
-function validateHistoryEntry(entry) {
+function validateHistoryEntry(entry: unknown): entry is HistoryEntry {
   return (
-    entry &&
+    entry !== null &&
     typeof entry === 'object' &&
-    typeof entry.id === 'string' &&
-    typeof entry.playerId === 'string' &&
-    typeof entry.change === 'number' &&
-    typeof entry.timestamp === 'number'
+    typeof (entry as HistoryEntry).id === 'string' &&
+    typeof (entry as HistoryEntry).playerId === 'string' &&
+    typeof (entry as HistoryEntry).change === 'number' &&
+    typeof (entry as HistoryEntry).timestamp === 'number'
   )
 }
 
-function validateLoadedState(payload) {
+function validateTheme(value: unknown, fallback: Theme): Theme {
+  return (VALID_THEMES as readonly string[]).includes(value as string)
+    ? (value as Theme)
+    : fallback
+}
+
+function validateRotation(value: unknown): number {
+  if (typeof value === 'number') {
+    // Normalize to 0-270 range and snap to valid rotation (multiple of 90)
+    const normalized = ((value % 360) + 360) % 360
+    return Math.round(normalized / 90) * 90 % 360
+  }
+  return 0
+}
+
+function validateLoadedState(payload: unknown): GameState | null {
   if (!payload || typeof payload !== 'object') {
     return null
   }
 
-  // Validate theme - must be one of the valid themes
-  const theme = VALID_THEMES.includes(payload.theme) ? payload.theme : DEFAULT_THEME
+  const data = payload as Record<string, unknown>
 
-  const validatedState = {
+  // Validate theme - must be one of the valid themes
+  const theme = validateTheme(data.theme, DEFAULT_THEME)
+
+  const validatedState: GameState = {
     theme,
     players: [],
     history: [],
   }
 
-  if (Array.isArray(payload.players)) {
-    validatedState.players = payload.players
+  if (Array.isArray(data.players)) {
+    validatedState.players = data.players
       .filter(validatePlayer)
       .map(p => ({
         id: p.id,
         name: p.name,
         color: p.color,
         score: p.score,
-        rotation: typeof p.rotation === 'number' ? p.rotation : 0,
+        rotation: validateRotation(p.rotation),
       }))
   }
 
-  if (Array.isArray(payload.history)) {
-    validatedState.history = payload.history
+  if (Array.isArray(data.history)) {
+    validatedState.history = data.history
       .filter(validateHistoryEntry)
       .slice(0, MAX_HISTORY_ENTRIES)
   }
@@ -91,7 +95,7 @@ function validateLoadedState(payload) {
   return validatedState
 }
 
-function gameReducer(state, action) {
+function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case ACTIONS.LOAD_STATE: {
       const validated = validateLoadedState(action.payload)
@@ -103,7 +107,7 @@ function gameReducer(state, action) {
     }
 
     case ACTIONS.SET_THEME: {
-      const newTheme = VALID_THEMES.includes(action.payload) ? action.payload : state.theme
+      const newTheme = validateTheme(action.payload, state.theme)
       return { ...state, theme: newTheme }
     }
 
@@ -111,7 +115,7 @@ function gameReducer(state, action) {
       if (state.players.length >= MAX_PLAYERS) return state
       const usedColors = state.players.map(p => p.color)
       const color = getNextAvailableColor(usedColors)
-      const newPlayer = {
+      const newPlayer: Player = {
         id: generateId(),
         name: action.payload || `Player ${state.players.length + 1}`,
         color: color.hex,
@@ -141,11 +145,9 @@ function gameReducer(state, action) {
         ...state,
         players: state.players.map(p => {
           if (p.id === action.payload) {
-            // Normalize to 0-270 range first (visually identical), then add 90
-            // This prevents backwards animation when values get high
-            const currentRotation = (p.rotation || 0) % 360
-            const newRotation = currentRotation + 90
-            return { ...p, rotation: newRotation }
+            // Add 90 degrees. Value may exceed 270 for smooth CSS animation.
+            // PlayerCell handles normalization for visual display.
+            return { ...p, rotation: p.rotation + 90 }
           }
           return p
         }),
@@ -154,7 +156,7 @@ function gameReducer(state, action) {
 
     case ACTIONS.ADJUST_SCORE: {
       const { playerId, change } = action.payload
-      const historyEntry = {
+      const historyEntry: HistoryEntry = {
         id: generateId(),
         playerId,
         change,
@@ -198,14 +200,14 @@ function gameReducer(state, action) {
   }
 }
 
-const GameContext = createContext(null)
+const GameContext = createContext<GameContextValue | null>(null)
 
-function saveToLocalStorage(state) {
+function saveToLocalStorage(state: GameState): boolean {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
     return true
   } catch (e) {
-    if (e.name === 'QuotaExceededError') {
+    if (e instanceof Error && e.name === 'QuotaExceededError') {
       // Try saving with truncated history
       const truncatedState = {
         ...state,
@@ -225,10 +227,10 @@ function saveToLocalStorage(state) {
   }
 }
 
-export function GameProvider({ children }) {
+export function GameProvider({ children }: GameProviderProps) {
   const [state, dispatch] = useReducer(gameReducer, initialState)
   const [isLoaded, setIsLoaded] = useState(false)
-  const saveTimerRef = useRef(null)
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Load state from localStorage on mount
   useEffect(() => {
@@ -282,14 +284,13 @@ export function GameProvider({ children }) {
   )
 }
 
-GameProvider.propTypes = {
-  children: PropTypes.node.isRequired,
-}
-
-export function useGame() {
+export function useGame(): GameContextValue {
   const context = useContext(GameContext)
   if (!context) {
     throw new Error('useGame must be used within a GameProvider')
   }
   return context
 }
+
+// Re-export ACTIONS for convenience
+export { ACTIONS }

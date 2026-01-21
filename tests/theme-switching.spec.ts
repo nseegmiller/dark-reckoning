@@ -6,7 +6,7 @@ const BASE_URL = 'http://localhost:5173';
 // Theme configurations to test
 // buttonText includes both the theme name and subtitle as seen by accessibility tools
 const THEMES = [
-  { id: 'atompunk', name: 'Atom Punk', buttonText: 'Atom Punk Terminal', className: 'theme-atompunk' },
+  { id: 'atompunk', name: 'Atom Punk', buttonText: 'Atom Terminal', className: 'theme-atompunk' },
   { id: 'nebula', name: 'Nebula', buttonText: 'Nebula Space', className: 'theme-nebula' },
   { id: 'clear', name: 'Clear', buttonText: 'Clear Readable', className: 'theme-clear' },
 ] as const;
@@ -116,7 +116,7 @@ test.describe('Theme Switching', () => {
       await page.getByRole('button', { name: 'Add' }).click();
 
       // Ensure Atom Punk theme (default)
-      await page.getByRole('button', { name: 'Atom Punk Terminal' }).click();
+      await page.getByRole('button', { name: 'Atom Terminal' }).click();
       await page.getByLabel('Close settings').click();
 
       // Check that score text has text-shadow
@@ -166,7 +166,7 @@ test.describe('Theme Switching', () => {
 
     test('Atom Punk theme has scanline overlay', async ({ page }) => {
       await page.getByLabel('Settings').click();
-      await page.getByRole('button', { name: 'Atom Punk Terminal' }).click();
+      await page.getByRole('button', { name: 'Atom Terminal' }).click();
       await page.getByLabel('Close settings').click();
 
       // Check that body::before is displayed (not 'none')

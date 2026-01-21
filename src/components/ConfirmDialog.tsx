@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types'
+import type { ConfirmDialogProps } from '../types'
 
 export function ConfirmDialog({
   title,
@@ -8,7 +8,7 @@ export function ConfirmDialog({
   confirmText = 'Confirm',
   cancelText = 'Cancel',
   danger = false
-}) {
+}: ConfirmDialogProps) {
   return (
     <div
       className="dr-overlay-heavy"
@@ -48,14 +48,4 @@ export function ConfirmDialog({
       </div>
     </div>
   )
-}
-
-ConfirmDialog.propTypes = {
-  title: PropTypes.string.isRequired,
-  message: PropTypes.string.isRequired,
-  onConfirm: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
-  confirmText: PropTypes.string,
-  cancelText: PropTypes.string,
-  danger: PropTypes.bool,
 }

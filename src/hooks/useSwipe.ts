@@ -1,27 +1,34 @@
 import { useRef, useCallback, useEffect } from 'react'
+import type { TouchEvent, MouseEvent } from 'react'
+import type { UseSwipeOptions, SwipeHandlers } from '../types'
 import {
   SWIPE_THRESHOLD_PX,
   PIXELS_PER_SCORE_UNIT,
   TAP_THRESHOLD_PX,
 } from '../constants'
 
+interface TouchStart {
+  x: number
+  y: number
+  time: number
+}
+
+interface Delta {
+  x: number
+  y: number
+}
+
 /**
  * Normalize rotation to 0-270 range for direction calculation
- * @param {number} rotation - Raw rotation value
- * @returns {number} Normalized rotation (0, 90, 180, or 270)
  */
-function normalizeRotation(rotation) {
+function normalizeRotation(rotation: number): number {
   return ((rotation % 360) + 360) % 360
 }
 
 /**
  * Transform delta based on rotation so "up" from player's view always increases score.
- * @param {number} deltaX - X movement (positive = moved left from start)
- * @param {number} deltaY - Y movement (positive = moved up from start)
- * @param {number} rotation - Player rotation in degrees
- * @returns {number} Transformed delta for score calculation
  */
-function transformDelta(deltaX, deltaY, rotation) {
+function transformDelta(deltaX: number, deltaY: number, rotation: number): number {
   switch (normalizeRotation(rotation)) {
     case 90:  return -deltaX  // swipe left (from player's view: up) = increase
     case 180: return -deltaY  // swipe down (from player's view: up) = increase
@@ -32,10 +39,8 @@ function transformDelta(deltaX, deltaY, rotation) {
 
 /**
  * Calculate score change from swipe delta
- * @param {number} delta - Transformed delta value
- * @returns {number} Score change (positive or negative integer, or 0 if below threshold)
  */
-function calculateChange(delta) {
+function calculateChange(delta: number): number {
   if (Math.abs(delta) < SWIPE_THRESHOLD_PX) return 0
   const units = Math.floor(Math.abs(delta) / PIXELS_PER_SCORE_UNIT)
   return Math.max(1, units) * (delta > 0 ? 1 : -1)
@@ -45,14 +50,13 @@ function calculateChange(delta) {
  * Calculate tap direction based on position within element.
  * Uses a bias toward positive scores - only returns -1 if tap is
  * in the bottom ~30% of the relevant axis (based on rotation).
- *
- * @param {number} clientX - Client X coordinate of tap
- * @param {number} clientY - Client Y coordinate of tap
- * @param {DOMRect} rect - Bounding rectangle of the element
- * @param {number} rotation - Player rotation in degrees
- * @returns {number} 1 for positive, -1 for negative
  */
-function calculateTapDirection(clientX, clientY, rect, rotation) {
+function calculateTapDirection(
+  clientX: number,
+  clientY: number,
+  rect: DOMRect,
+  rotation: number
+): number {
   const centerX = rect.width / 2
   const centerY = rect.height / 2
   const tapX = clientX - rect.left - centerX
@@ -73,25 +77,18 @@ function calculateTapDirection(clientX, clientY, rect, rotation) {
 
 /**
  * Hook for handling swipe and tap gestures with rotation awareness.
- *
- * @param {Object} options
- * @param {Function} options.onSwipe - Called with score change when swipe ends
- * @param {Function} [options.onPreview] - Called during swipe with current calculated change
- * @param {Function} [options.onTap] - Called with direction (1 or -1) when tap detected
- * @param {number} [options.rotation=0] - Player rotation in degrees
- * @returns {Object} Event handlers to spread on the target element
  */
-export function useSwipe({ onSwipe, onPreview, onTap, rotation = 0 }) {
-  const touchStart = useRef(null)
-  const currentDelta = useRef({ x: 0, y: 0 })
-  const elementRef = useRef(null)
-  const lastTouchTimeRef = useRef(0)
+export function useSwipe({ onSwipe, onPreview, onTap, rotation = 0 }: UseSwipeOptions): SwipeHandlers {
+  const touchStart = useRef<TouchStart | null>(null)
+  const currentDelta = useRef<Delta>({ x: 0, y: 0 })
+  const elementRef = useRef<HTMLElement | null>(null)
+  const lastTouchTimeRef = useRef<number>(0)
 
   // =========================================================================
   // Touch handlers
   // =========================================================================
 
-  const handleTouchStart = useCallback((e) => {
+  const handleTouchStart = useCallback((e: TouchEvent) => {
     if (!e.touches || !e.touches[0]) return
     lastTouchTimeRef.current = Date.now()
     touchStart.current = {
@@ -100,10 +97,10 @@ export function useSwipe({ onSwipe, onPreview, onTap, rotation = 0 }) {
       time: Date.now(),
     }
     currentDelta.current = { x: 0, y: 0 }
-    elementRef.current = e.currentTarget
+    elementRef.current = e.currentTarget as HTMLElement
   }, [])
 
-  const handleTouchMove = useCallback((e) => {
+  const handleTouchMove = useCallback((e: TouchEvent) => {
     if (!touchStart.current || !e.touches || !e.touches[0]) return
 
     const deltaX = touchStart.current.x - e.touches[0].clientX
@@ -123,7 +120,7 @@ export function useSwipe({ onSwipe, onPreview, onTap, rotation = 0 }) {
     }
   }, [onPreview, rotation])
 
-  const handleTouchEnd = useCallback((e) => {
+  const handleTouchEnd = useCallback((e: TouchEvent) => {
     if (!touchStart.current) return
 
     const { x: deltaX, y: deltaY } = currentDelta.current
@@ -170,9 +167,9 @@ export function useSwipe({ onSwipe, onPreview, onTap, rotation = 0 }) {
   // Mouse handlers (for desktop support)
   // =========================================================================
 
-  const mouseStart = useRef(null)
+  const mouseStart = useRef<{ x: number; y: number } | null>(null)
 
-  const handleMouseMove = useCallback((e) => {
+  const handleMouseMove = useCallback((e: globalThis.MouseEvent) => {
     if (!mouseStart.current) return
     const deltaX = mouseStart.current.x - e.clientX
     const deltaY = mouseStart.current.y - e.clientY
@@ -186,7 +183,7 @@ export function useSwipe({ onSwipe, onPreview, onTap, rotation = 0 }) {
     }
   }, [onPreview, rotation])
 
-  const handleMouseUp = useCallback((e) => {
+  const handleMouseUp = useCallback((e: globalThis.MouseEvent) => {
     if (!mouseStart.current) return
 
     const { x: deltaX, y: deltaY } = currentDelta.current
@@ -216,7 +213,7 @@ export function useSwipe({ onSwipe, onPreview, onTap, rotation = 0 }) {
     document.removeEventListener('mouseup', handleMouseUp)
   }, [onSwipe, onPreview, onTap, rotation, handleMouseMove])
 
-  const handleMouseDown = useCallback((e) => {
+  const handleMouseDown = useCallback((e: MouseEvent) => {
     // Skip if this is a synthetic mouse event following a touch event
     // Mobile browsers fire both touch and mouse events for compatibility
     if (Date.now() - lastTouchTimeRef.current < 500) {
@@ -225,7 +222,7 @@ export function useSwipe({ onSwipe, onPreview, onTap, rotation = 0 }) {
 
     mouseStart.current = { x: e.clientX, y: e.clientY }
     currentDelta.current = { x: 0, y: 0 }
-    elementRef.current = e.currentTarget
+    elementRef.current = e.currentTarget as HTMLElement
 
     // Add global listeners to track mouse even when it leaves the element
     document.addEventListener('mousemove', handleMouseMove)

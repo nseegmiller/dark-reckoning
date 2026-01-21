@@ -1,34 +1,23 @@
-// Section type constants
-export const SECTION_TYPES = {
-  FEATURES: 'features',
-  BUG_FIXES: 'bugFixes',
-  CODE_QUALITY: 'codeQuality'
-}
-
-// Section header mappings
-const SECTION_HEADERS = {
-  '**Features:**': SECTION_TYPES.FEATURES,
-  '**Bug Fixes:**': SECTION_TYPES.BUG_FIXES,
-  '**Code Quality:**': SECTION_TYPES.CODE_QUALITY
-}
+import { HEADER_TO_SECTION } from '../types'
+import type { VersionEntry, SectionType } from '../types'
 
 /**
  * Parse CHANGELOG.md content into structured version data
- * @param {string} changelogText - Raw markdown text from CHANGELOG.md
- * @returns {Array<Object>} Array of version objects with features, bugFixes, and codeQuality
- * @throws {Error} If parsing fails
+ * @param changelogText - Raw markdown text from CHANGELOG.md
+ * @returns Array of version objects with features, bugFixes, and codeQuality
+ * @throws Error if parsing fails
  */
-export function parseChangelog(changelogText) {
+export function parseChangelog(changelogText: string): VersionEntry[] {
   try {
     if (!changelogText || typeof changelogText !== 'string') {
       throw new Error('Invalid changelog content')
     }
 
-    const versions = []
+    const versions: VersionEntry[] = []
     const lines = changelogText.split('\n')
 
-    let currentVersion = null
-    let currentSection = null
+    let currentVersion: VersionEntry | null = null
+    let currentSection: SectionType | null = null
 
     for (const line of lines) {
       const trimmedLine = line.trim()
@@ -45,15 +34,15 @@ export function parseChangelog(changelogText) {
         }
         currentVersion = {
           version: trimmedLine.replace('## ', '').trim(),
-          [SECTION_TYPES.FEATURES]: [],
-          [SECTION_TYPES.BUG_FIXES]: [],
-          [SECTION_TYPES.CODE_QUALITY]: []
+          features: [],
+          bugFixes: [],
+          codeQuality: []
         }
         currentSection = null
       }
       // Section headers
-      else if (SECTION_HEADERS[trimmedLine]) {
-        currentSection = SECTION_HEADERS[trimmedLine]
+      else if (HEADER_TO_SECTION[trimmedLine]) {
+        currentSection = HEADER_TO_SECTION[trimmedLine]
       }
       // List items
       else if (trimmedLine.startsWith('- ') && currentVersion && currentSection) {
@@ -72,6 +61,6 @@ export function parseChangelog(changelogText) {
     return versions
   } catch (error) {
     console.error('Failed to parse changelog:', error)
-    throw new Error(`Changelog parsing failed: ${error.message}`)
+    throw new Error(`Changelog parsing failed: ${error instanceof Error ? error.message : String(error)}`)
   }
 }

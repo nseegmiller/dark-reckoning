@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Dark Reckoning is a board game score tracking web application. It works with any board game that needs score tracking. It's a React + Vite application with two themes (Atom Punk terminal and Nebula space), designed for mobile-first touch interactions with swipe gestures to adjust scores.
+Dark Reckoning is a board game score tracking web application. It works with any board game that needs score tracking. It's a React + Vite + TypeScript application with two themes (Atom Punk terminal and Nebula space), designed for mobile-first touch interactions with swipe gestures to adjust scores.
 
 ## Development Commands
 
@@ -20,17 +20,17 @@ npm run preview  # Preview production build
 
 ### Version Management
 
-The app version is managed in `src/version.js` with separate `VERSION_MAJOR` and `VERSION_MINOR` constants.
+The app version is managed in `src/version.ts` with separate `VERSION_MAJOR` and `VERSION_MINOR` constants.
 
 **Version Update Rules:**
-- **IMPORTANT**: Update the version number in `src/version.js` BEFORE making each commit
+- **IMPORTANT**: Update the version number in `src/version.ts` BEFORE making each commit
 - **Update MINOR version**: Increment `VERSION_MINOR` by 1 before every commit with changes
 - **Update MAJOR version**: Only when explicitly requested by the user (increment `VERSION_MAJOR` by 1, reset `VERSION_MINOR` to 0), then commit
 - Current version is displayed in the header next to "Dark Reckoning"
 
 **Commit Workflow:**
 1. Make code changes
-2. Update version in `src/version.js` (increment MINOR by 1)
+2. Update version in `src/version.ts` (increment MINOR by 1)
 3. Generate commit message and add it to `CHANGELOG.md`:
    - Add new version section at the top (e.g., `## v0.8`)
    - ONLY include sections: **Features** and/or **Bug Fixes**
@@ -49,7 +49,7 @@ The app version is managed in `src/version.js` with separate `VERSION_MAJOR` and
 - **Code Quality**: Only in commit messages, NEVER in CHANGELOG.md (internal development only)
 
 **Important Notes:**
-- CHANGELOG.md is automatically imported by ChangeHistory.jsx - no manual syncing needed
+- CHANGELOG.md is automatically imported by ChangeHistory.tsx - no manual syncing needed
 - Never include any "Co-Authored-By" lines anywhere (commits or changelog)
 - Empty sections should be omitted entirely (don't write "None" or leave them empty)
 
@@ -57,7 +57,7 @@ The app version is managed in `src/version.js` with separate `VERSION_MAJOR` and
 
 ### State Management Pattern
 
-The app uses React Context + useReducer for global state management centered in `src/context/GameContext.jsx`. All game state (players, scores, history, theme, multiplier) flows through the `GameContext`.
+The app uses React Context + useReducer for global state management centered in `src/context/GameContext.tsx`. All game state (players, scores, history, theme, multiplier) flows through the `GameContext`.
 
 **Key state operations:**
 - State automatically persists to localStorage (key: `'darkReckoning'`)
@@ -66,14 +66,14 @@ The app uses React Context + useReducer for global state management centered in 
 
 ### Component Structure
 
-- **App.jsx**: Root component that wraps everything in GameProvider
-- **PlayerGrid.jsx**: Dynamic grid layout (1-8 players) that calculates grid-cols/rows based on player count
-- **PlayerCell.jsx**: Individual player display with swipe gesture handling
-- **SettingsMenu.jsx**: Full-screen overlay for managing players and game settings
+- **App.tsx**: Root component that wraps everything in GameProvider
+- **PlayerGrid.tsx**: Dynamic grid layout (1-8 players) that calculates grid-cols/rows based on player count
+- **PlayerCell.tsx**: Individual player display with swipe gesture handling
+- **SettingsMenu.tsx**: Full-screen overlay for managing players and game settings
 
 ### Touch Interaction System
 
-The core interaction is swipe-to-score implemented in `src/hooks/useSwipe.js`:
+The core interaction is swipe-to-score implemented in `src/hooks/useSwipe.ts`:
 
 1. **Rotation-aware gestures**: Swipe direction transforms based on player.rotation (0°, 90°, 180°, 270°) so "up from player's perspective" always increases score
 2. **Delta calculation**: 30 pixels = 1 unit, scaled by global multiplier
@@ -88,7 +88,7 @@ Uses Tailwind CSS with extensive custom properties:
 
 - **Theming**: CSS variables in `src/index.css` (`--theme-primary`, `--theme-bg`, etc.) with `dr-` prefixed utility classes
 - **CRT effects**: Scanline overlay and vignette applied via body pseudo-elements
-- **Custom colors**: 8 player colors defined in `tailwind.config.js` and `src/utils/colors.js`
+- **Custom colors**: 8 player colors defined in `tailwind.config.js` and `src/utils/colors.ts`
 - **Responsive fonts**: `score-text` class uses clamp() for viewport-based sizing
 
 ### Data Persistence
@@ -100,11 +100,35 @@ localStorage is the single source of truth:
 
 ## Key Files
 
-- `src/context/GameContext.jsx` - State management reducer and localStorage sync
-- `src/hooks/useSwipe.js` - Touch/mouse gesture handling with rotation support
-- `src/components/PlayerCell.jsx` - Individual player rendering and interaction
-- `src/utils/colors.js` - Player color palette (8 colors)
+- `src/context/GameContext.tsx` - State management reducer and localStorage sync
+- `src/hooks/useSwipe.ts` - Touch/mouse gesture handling with rotation support
+- `src/components/PlayerCell.tsx` - Individual player rendering and interaction
+- `src/utils/colors.ts` - Player color palette (8 colors)
+- `src/types/` - TypeScript type definitions
 - `tailwind.config.js` - Custom theme colors and game styling
+
+## TypeScript
+
+This is a TypeScript project. All source files use `.ts`/`.tsx` extensions.
+
+### Type Locations
+- Shared types: `src/types/`
+- Component props: `src/types/components.ts`
+- Game state: `src/types/game.ts`
+- Actions: `src/types/actions.ts`
+- Hooks: `src/types/hooks.ts`
+
+### Type Import Convention
+```typescript
+import type { Player, GameState } from '../types'
+```
+
+### Path Aliases
+- `@/` -> `src/`
+- `@components/` -> `src/components/`
+- `@context/` -> `src/context/`
+- `@hooks/` -> `src/hooks/`
+- `@utils/` -> `src/utils/`
 
 ## Important Constraints
 

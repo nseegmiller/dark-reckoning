@@ -1,12 +1,12 @@
 import { useState, useCallback, memo, useLayoutEffect, useRef } from 'react'
-import PropTypes from 'prop-types'
 import { useGame, ACTIONS } from '../context/GameContext'
 import { useSwipe } from '../hooks/useSwipe'
 import { useScoreAccumulator } from '../hooks/useScoreAccumulator'
+import type { PlayerCellProps } from '../types'
 
-export const PlayerCell = memo(function PlayerCell({ player }) {
+export const PlayerCell = memo(function PlayerCell({ player }: PlayerCellProps) {
   const { dispatch } = useGame()
-  const [previewChange, setPreviewChange] = useState(null)
+  const [previewChange, setPreviewChange] = useState<number | null>(null)
 
   // Use the score accumulator hook for debounced score changes
   const { accumulatedChange, hasPendingChanges, add, commit } = useScoreAccumulator(
@@ -15,15 +15,15 @@ export const PlayerCell = memo(function PlayerCell({ player }) {
   )
 
   // Track rotation for smooth transitions (avoid backwards animation on normalization)
-  const prevRotationRef = useRef(player.rotation || 0)
-  const [visualRotation, setVisualRotation] = useState(player.rotation || 0)
+  const prevRotationRef = useRef(player.rotation)
+  const [visualRotation, setVisualRotation] = useState(player.rotation)
   const [skipTransition, setSkipTransition] = useState(false)
 
-  const handleScoreChange = useCallback((change) => {
+  const handleScoreChange = useCallback((change: number) => {
     add(change)
   }, [add])
 
-  const handlePreview = useCallback((change) => {
+  const handlePreview = useCallback((change: number | null) => {
     setPreviewChange(change)
   }, [])
 
@@ -34,7 +34,7 @@ export const PlayerCell = memo(function PlayerCell({ player }) {
   }, [commit, dispatch, player.id])
 
   const swipeHandlers = useSwipe({
-    rotation: player.rotation || 0,
+    rotation: player.rotation,
     onSwipe: handleScoreChange,
     onPreview: handlePreview,
     onTap: handleScoreChange,
@@ -50,11 +50,10 @@ export const PlayerCell = memo(function PlayerCell({ player }) {
   const highlightColor = shouldHighlight
     ? (isPositive ? 'var(--color-positive)' : 'var(--color-negative)')
     : player.color
-  const rotation = player.rotation || 0
 
   // Detect rotation normalization (value decreased) and handle smoothly
   useLayoutEffect(() => {
-    const currentRotation = player.rotation || 0
+    const currentRotation = player.rotation
     const prevRotation = prevRotationRef.current
 
     if (currentRotation < prevRotation) {
@@ -152,13 +151,3 @@ export const PlayerCell = memo(function PlayerCell({ player }) {
     </div>
   )
 })
-
-PlayerCell.propTypes = {
-  player: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-    color: PropTypes.string.isRequired,
-    score: PropTypes.number.isRequired,
-    rotation: PropTypes.number,
-  }).isRequired,
-}

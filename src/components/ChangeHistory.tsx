@@ -1,17 +1,20 @@
 import { useMemo, useState } from 'react'
-import PropTypes from 'prop-types'
 import { parseChangelog } from '../utils/changelog'
 import { ChangelogSection } from './ChangelogSection'
 import changelogRaw from '../../CHANGELOG.md?raw'
 
-export function ChangeHistory({ onClose }) {
-  const [error, setError] = useState(null)
+interface ChangeHistoryProps {
+  onClose: () => void
+}
+
+export function ChangeHistory({ onClose }: ChangeHistoryProps) {
+  const [error, setError] = useState<string | null>(null)
 
   const versions = useMemo(() => {
     try {
       return parseChangelog(changelogRaw)
     } catch (err) {
-      setError(err.message)
+      setError(err instanceof Error ? err.message : String(err))
       return []
     }
   }, [])
@@ -68,8 +71,4 @@ export function ChangeHistory({ onClose }) {
       </div>
     </div>
   )
-}
-
-ChangeHistory.propTypes = {
-  onClose: PropTypes.func.isRequired,
 }

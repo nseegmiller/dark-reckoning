@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import type { DialogState } from '../types'
 
 /**
  * Hook for managing dialog/modal open/close state.
@@ -6,8 +7,8 @@ import { useState, useCallback } from 'react'
  * Provides a simple interface for controlling dialog visibility
  * with memoized callbacks to prevent unnecessary re-renders.
  *
- * @param {boolean} [initialOpen=false] - Initial open state
- * @returns {Object} Dialog state and control functions
+ * @param initialOpen - Initial open state
+ * @returns Dialog state and control functions
  *
  * @example
  * function MyComponent() {
@@ -23,7 +24,7 @@ import { useState, useCallback } from 'react'
  *   )
  * }
  */
-export function useDialog(initialOpen = false) {
+export function useDialog(initialOpen = false): DialogState {
   const [isOpen, setIsOpen] = useState(initialOpen)
 
   /** Open the dialog */

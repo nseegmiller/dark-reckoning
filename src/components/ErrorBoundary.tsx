@@ -1,18 +1,19 @@
 import { Component } from 'react'
-import PropTypes from 'prop-types'
+import type { ReactNode, ErrorInfo } from 'react'
 import { STORAGE_KEY } from '../constants'
+import type { ErrorBoundaryProps, ErrorBoundaryState } from '../types'
 
-export class ErrorBoundary extends Component {
-  constructor(props) {
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
     super(props)
     this.state = { hasError: false, error: null }
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error }
   }
 
-  componentDidCatch(error, errorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo)
   }
 
@@ -25,7 +26,7 @@ export class ErrorBoundary extends Component {
     window.location.reload()
   }
 
-  render() {
+  render(): ReactNode {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: 'var(--dr-bg)' }}>
@@ -65,8 +66,4 @@ export class ErrorBoundary extends Component {
 
     return this.props.children
   }
-}
-
-ErrorBoundary.propTypes = {
-  children: PropTypes.node.isRequired,
 }

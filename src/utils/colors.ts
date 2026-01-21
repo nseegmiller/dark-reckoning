@@ -1,4 +1,6 @@
-export const PLAYER_COLORS = [
+import type { PlayerColor } from '../types'
+
+export const PLAYER_COLORS: PlayerColor[] = [
   { name: 'Red', hex: '#E53935' },
   { name: 'Yellow', hex: '#FFB300' },
   { name: 'Green', hex: '#43A047' },
@@ -9,7 +11,7 @@ export const PLAYER_COLORS = [
   { name: 'Pink', hex: '#D81B60' },
 ]
 
-export const getNextAvailableColor = (usedColors = []) => {
+export const getNextAvailableColor = (usedColors: string[] = []): PlayerColor => {
   if (!Array.isArray(usedColors)) {
     return PLAYER_COLORS[0]
   }

@@ -1,12 +1,12 @@
-import PropTypes from 'prop-types'
 import { useGame, ACTIONS } from '../context/GameContext'
 import { useDialog } from '../hooks/useDialog'
 import { History } from './History'
 import { ChangeHistory } from './ChangeHistory'
 import { VERSION } from '../version'
 import { flushAndExecute } from '../constants'
+import type { HeaderProps } from '../types'
 
-export function Header({ onSettingsClick }) {
+export function Header({ onSettingsClick }: HeaderProps) {
   const { state, dispatch } = useGame()
   const historyDialog = useDialog()
   const changeHistoryDialog = useDialog()
@@ -92,8 +92,4 @@ export function Header({ onSettingsClick }) {
       {changeHistoryDialog.isOpen && <ChangeHistory onClose={changeHistoryDialog.close} />}
     </>
   )
-}
-
-Header.propTypes = {
-  onSettingsClick: PropTypes.func.isRequired,
 }

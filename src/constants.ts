@@ -1,5 +1,7 @@
 // Shared constants used across the application
 
+import type { Theme, ThemeOption } from './types'
+
 // ============================================================================
 // Player Limits
 // ============================================================================
@@ -48,10 +50,17 @@ export const TAP_THRESHOLD_PX = 5
 // ============================================================================
 
 /** List of valid theme identifiers */
-export const VALID_THEMES = ['atompunk', 'nebula', 'clear']
+export const VALID_THEMES: Theme[] = ['atompunk', 'nebula', 'clear']
 
 /** Default theme when none is set or invalid */
-export const DEFAULT_THEME = 'atompunk'
+export const DEFAULT_THEME: Theme = 'atompunk'
+
+/** Theme display options for UI components */
+export const THEME_OPTIONS: ThemeOption[] = [
+  { id: 'atompunk', name: 'Atom', description: 'Terminal' },
+  { id: 'nebula', name: 'Nebula', description: 'Space' },
+  { id: 'clear', name: 'Clear', description: 'Readable' },
+]
 
 // ============================================================================
 // Storage
@@ -87,9 +96,9 @@ export const FLUSH_SCORES_EVENT = 'flushPendingScores'
  * Dispatch flush event and execute callback after delay.
  * Use this before any action that requires all pending scores to be committed.
  *
- * @param {Function} callback - Function to execute after flush completes
+ * @param callback - Function to execute after flush completes
  */
-export function flushAndExecute(callback) {
+export function flushAndExecute(callback: () => void): void {
   window.dispatchEvent(new CustomEvent(FLUSH_SCORES_EVENT))
   setTimeout(callback, FLUSH_DELAY_MS)
 }

@@ -1,5 +1,18 @@
 # Change History
 
+## v0.17
+
+**Features**
+- Migrate entire codebase from JavaScript to TypeScript
+- Add comprehensive type definitions in src/types/
+- Enable strict TypeScript mode for better type safety
+- Add path aliases (@/, @components/, @hooks/, etc.) for cleaner imports
+- Add unit test suite with 84 tests (gameReducer, useSwipe, useScoreAccumulator, colors)
+- Add Vitest coverage thresholds (60% lines/functions/statements, 50% branches)
+- Extract PlayerList, AddPlayerForm, and ThemeSelector components from SettingsMenu
+- Add component barrel file (src/components/index.ts) for cleaner imports
+- Centralize ThemeOption type and THEME_OPTIONS constant
+
 ## v0.16
 
 **Features**

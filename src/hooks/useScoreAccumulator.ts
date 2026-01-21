@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { ACTIONS } from '../context/GameContext'
+import { ACTIONS } from '../types'
+import type { GameAction, ScoreAccumulatorState } from '../types'
 import { COMMIT_DEBOUNCE_MS, FLUSH_SCORES_EVENT } from '../constants'
 
 /**
@@ -12,18 +13,21 @@ import { COMMIT_DEBOUNCE_MS, FLUSH_SCORES_EVENT } from '../constants'
  * - Immediate commit on flush events (undo, settings, etc.)
  * - Cleanup commit on unmount
  *
- * @param {string} playerId - The player's unique identifier
- * @param {Function} dispatch - The game context dispatch function
- * @returns {Object} Score accumulator state and functions
+ * @param playerId - The player's unique identifier
+ * @param dispatch - The game context dispatch function
+ * @returns Score accumulator state and functions
  */
-export function useScoreAccumulator(playerId, dispatch) {
+export function useScoreAccumulator(
+  playerId: string,
+  dispatch: React.Dispatch<GameAction>
+): ScoreAccumulatorState {
   // Dual state tracking for accumulated changes:
   // - accumulatedChange (state): Triggers UI re-renders to show pending changes
   // - accumulatedChangeRef (ref): Used in callbacks/unmount without causing re-renders
   // Both are needed to ensure correct values in all contexts (render vs callbacks)
   const [accumulatedChange, setAccumulatedChange] = useState(0)
   const accumulatedChangeRef = useRef(0)
-  const commitTimerRef = useRef(null)
+  const commitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [hasPendingChanges, setHasPendingChanges] = useState(false)
 
   /**
@@ -49,10 +53,8 @@ export function useScoreAccumulator(playerId, dispatch) {
   /**
    * Add a score change to the accumulator.
    * Resets the debounce timer.
-   *
-   * @param {number} change - The score change to add (positive or negative)
    */
-  const add = useCallback((change) => {
+  const add = useCallback((change: number) => {
     const newValue = accumulatedChangeRef.current + change
     accumulatedChangeRef.current = newValue
     setAccumulatedChange(newValue)

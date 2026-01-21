@@ -9,7 +9,7 @@ Use it now at [darkreckoning.com](https://darkreckoning.com/)
 - **Swipe to Score**: Swipe up/down on player cards to adjust scores
 - **Tap to Adjust**: Single tap on top/bottom of player card for +1/-1
 - **Rotation Support**: Rotate player cards for around-the-table play
-- **Two Themes**: Atom Punk (terminal) and Nebula (space)
+- **Three Themes**: Atom Punk (terminal), Nebula (space), and Clear (high visibility)
 - **Undo History**: Track and revert score changes
 - **Offline Support**: All data stored locally in browser
 - **Up to 8 Players**: Each with customizable name and color
@@ -139,25 +139,30 @@ npm run lint:fix
 dark-reckoning/
 ├── src/
 │   ├── components/      # React components
-│   │   ├── App.jsx          # Root component
-│   │   ├── PlayerGrid.jsx   # Dynamic grid layout
-│   │   ├── PlayerCell.jsx   # Individual player card
-│   │   ├── SettingsMenu.jsx # Settings overlay
+│   │   ├── App.tsx          # Root component
+│   │   ├── PlayerGrid.tsx   # Dynamic grid layout
+│   │   ├── PlayerCell.tsx   # Individual player card
+│   │   ├── SettingsMenu.tsx # Settings overlay
 │   │   └── ...
 │   ├── context/         # React Context providers
-│   │   └── GameContext.jsx  # Global state management
+│   │   └── GameContext.tsx  # Global state management
 │   ├── hooks/           # Custom React hooks
-│   │   └── useSwipe.js      # Touch/mouse gesture handling
+│   │   └── useSwipe.ts      # Touch/mouse gesture handling
+│   ├── types/           # TypeScript type definitions
+│   │   ├── index.ts         # Type re-exports
+│   │   ├── game.ts          # Game state types
+│   │   ├── actions.ts       # Action types
+│   │   └── components.ts    # Component prop types
 │   ├── utils/           # Utility functions
-│   │   └── colors.js        # Player color palette
+│   │   └── colors.ts        # Player color palette
 │   ├── index.css        # Global styles & themes
-│   ├── main.jsx         # App entry point
-│   └── version.js       # App version constants
+│   ├── main.tsx         # App entry point
+│   └── version.ts       # App version constants
 ├── tests/               # Playwright E2E tests
 ├── public/              # Static assets
 ├── playwright.config.ts # Playwright configuration
 ├── tailwind.config.js   # Tailwind CSS configuration
-├── vite.config.js       # Vite configuration
+├── vite.config.ts       # Vite configuration
 └── package.json
 ```
 
@@ -175,6 +180,7 @@ dark-reckoning/
 ## Tech Stack
 
 - **React 18** - UI framework
+- **TypeScript** - Type-safe JavaScript
 - **Vite** - Build tool and dev server
 - **Tailwind CSS** - Styling
 - **Vitest** - Unit testing
